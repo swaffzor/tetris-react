@@ -33,10 +33,10 @@ export interface Spot {
 
 export interface SpriteSpot {
   row: number;
-  col: Column;
+  col: number;
 }
 
-export type Sprite = SpriteSpot[][];
+export type Sprite = SpriteSpot[];
 
 export interface SpriteEntry {
   name: string;
