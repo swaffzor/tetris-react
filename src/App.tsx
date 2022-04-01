@@ -10,10 +10,17 @@ function App() {
   const boardHeight = 12;
   const empty: Spot = { color: "bg-slate-400", fixed: false };
   const emptyBoard: Spot[][] = [];
+  // init an empty board
   for (let y = 0; y < boardHeight; y++) {
     const tempRow: Spot[] = [];
     for (let x = 0; x < boardWidth; x++) {
-      tempRow.push(empty);
+      tempRow.push({
+        ...empty,
+        color: y % 3 === 0 && x === 3 ? "bg-blue-400" : "bg-slate-400",
+        col: y,
+        row: x,
+        fixed: y % 3 === 0 && x === 3,
+      });
     }
     emptyBoard.push(tempRow);
   }
@@ -103,7 +110,7 @@ function App() {
     },
     t: {
       name: "t",
-      color: "bg-blue-400",
+      color: "bg-pink-400",
       sprite: [
         [{ row: 0, col: 5 }],
         [
@@ -138,7 +145,7 @@ function App() {
   };
 
   const [board, setBoard] = useState<Spot[][]>(emptyBoard);
-  const [sprite, setSprite] = useState<SpriteEntry>(pieceSprites.i);
+  const [sprite, setSprite] = useState<SpriteEntry>(pieceSprites.j);
   const [time, setTime] = useState(0);
   const [isPieceSet, setIsPieceSet] = useState(false);
 
@@ -176,12 +183,14 @@ function App() {
     const tempBoard = [...board];
     sprite.sprite.forEach((spriteRow, rowIndex) => {
       spriteRow.forEach((spriteSpot) => {
+        // color spot above falling sprite
         if (rowIndex === 0) {
           tempBoard[spriteSpot.row - 1]?.splice(spriteSpot.col, 1, {
             color: "bg-slate-400",
             fixed: false,
           });
         }
+        // color each spot on board where sprite is
         tempBoard[spriteSpot.row].splice(spriteSpot.col, 1, {
           color: sprite.color,
           fixed: false,
@@ -219,38 +228,46 @@ function App() {
   }, [time]);
 
   useEffect(() => {
-    if (leftPressed && !isPieceSet) {
-      setTheSprite({
-        ...sprite,
-        column: sprite.column - 1,
-        sprite: sprite.sprite.map((srow) =>
-          srow.map((spot) => {
-            return {
-              ...spot,
-              col: spot.col - 1,
-            };
-          })
-        ),
+    // move left or right
+    if (!isPieceSet) {
+      const magnitude = leftPressed
+        ? sprite.column
+        : sprite.column + sprite.width;
+      const direction =
+        leftPressed && magnitude > 0
+          ? -1
+          : rightPressed && magnitude < boardWidth
+          ? 1
+          : 0;
+      let allowed = true;
+      sprite.sprite.forEach((row) => {
+        row.forEach((spot) => {
+          const isFixed = board[spot.row][spot.col + direction]?.fixed;
+          if (isFixed) {
+            allowed = !isFixed;
+          }
+        });
       });
+
+      allowed &&
+        setTheSprite({
+          ...sprite,
+          column: sprite.column + direction,
+          sprite: sprite.sprite.map((srow) =>
+            srow.map((spot) => {
+              return {
+                ...spot,
+                col: spot.col + direction,
+              };
+            })
+          ),
+        });
     }
-    if (rightPressed && !isPieceSet) {
-      setTheSprite({
-        ...sprite,
-        column: sprite.column + 1,
-        sprite: sprite.sprite.map((srow) =>
-          srow.map((spot) => {
-            return {
-              ...spot,
-              col: spot.col + 1,
-            };
-          })
-        ),
-      });
-    }
-  }, [leftPressed, rightPressed]);
+  }, [leftPressed, rightPressed, isPieceSet]);
 
   useEffect(() => {
-    let nextPiece = pieceSprites["l"];
+    // get next sprite
+    let nextPiece = pieceSprites["i"];
     // switch (Math.floor(Math.random() * 6)) {
     switch (sprite.name) {
       case "i":
