@@ -1,8 +1,8 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-debugger */
 import React, { useEffect, useState } from "react";
-import useKeyPress from "./useKeyPress";
-import { Color, PieceSprite, Spot, SpriteEntry } from "./types";
+import { useDebounce, useKeyPress, useThrottle } from "./hooks";
+import { Color, PieceSprite, Spot, Sprite, SpriteEntry } from "./types";
 import "./App.css";
 
 function App() {
@@ -135,6 +135,7 @@ function App() {
   const keyRightPressed = useKeyPress("ArrowRight");
   const keyDPressed = useKeyPress("d");
   const keySpacePressed = useKeyPress(" ");
+  // const keySpacePressed = useDebounce(spacePressed, 150);
   const leftPressed = keyLeftPressed || keyAPressed;
   const rightPressed = keyRightPressed || keyDPressed;
 
@@ -213,11 +214,11 @@ function App() {
       setTheSprite(sprite, true);
       setIsPieceSet(true);
     }
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setTime(time + 1);
     }, 500);
 
-    return () => clearInterval();
+    return () => clearInterval(timeout);
   }, [time]);
 
   useEffect(() => {
@@ -255,23 +256,11 @@ function App() {
   }, [leftPressed, rightPressed, isPieceSet]);
 
   useEffect(() => {
-    debugger;
-    const matrix = [
-      [0, 0, 1, 0],
-      [0, 2, 3, 4],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ];
-    // [
-    //   [{ row: 0, col: 2 }],
-    //   [
-    //     { row: 1, col: 1 },
-    //     { row: 1, col: 2 },
-    //     { row: 1, col: 3 },
-    //   ],
-    // ],
+    if (!keySpacePressed) {
+      return;
+    }
     let count = 1;
-    let max = Math.max(pieceSprites.t.height, pieceSprites.t.width);
+    let max = Math.max(sprite.height, sprite.width) + 1;
     let tempMatrix: number[][] = [];
 
     for (let y = 0; y < max; y++) {
@@ -280,49 +269,40 @@ function App() {
         tempMatrix[y].push(0);
       }
     }
-    const reducedMatrix = pieceSprites.t.sprite.flat().map((s) => {
+    const reducedMatrix = sprite.sprite.map((s) => {
       return {
         ...s,
-        col: s.col - pieceSprites.t.column + 1,
+        row: s.row - sprite.row + 1,
+        col: s.col - sprite.column + 1,
       };
     });
 
-    const tempBoard = [...board];
-    // setBoard()
-    reducedMatrix.map((spot) => {
-      const isFixed = tempBoard[spot.row][spot.col].fixed;
-      !isFixed &&
-        tempBoard[spot.row].splice(spot.col, 1, {
-          color: "bg-blue-400",
-          fixed: false,
-        });
+    reducedMatrix.forEach((spot) => {
+      tempMatrix[spot.row][spot.col] = count++;
     });
 
-    // pieceSprites.t.sprite.forEach((row, yOffset) => {
-    //   row.forEach((spot, xOffset) => {
-    //     tempMatrix[spot.row][spot.col] = count++;
-    //   });
-    // });
-
-    // const matrix = [
-
-    // ]
-    // const matrix = sprite.sprite;
-    const idk = matrix[0].map((val, index) =>
-      matrix.map((row) => row[index]).reverse()
+    const rotated = tempMatrix[0].map((val, index) =>
+      tempMatrix.map((row) => row[index]).reverse()
     );
-    // setTheSprite({ ...sprite, sprite: idk });
-    debugger;
-    // let matrix = compose(translate(40, 40), scale(2, 4));
-    // const mtx: Matrix = {
-    //   a: 1,
-    //   b: 0,
-    //   c: 0,
-    //   d: 1,
-    //   e: 0,
-    //   f: 0,
-    // };
-    // const idk = transform(translate(2, 1), mtx);
+
+    const converted: Sprite = [];
+    rotated.forEach((row, y) => {
+      row.forEach((spot, x) => {
+        const index = spot > 0 ? spot - 1 : -1;
+        index >= 0 &&
+          converted?.splice(index, 0, {
+            row: y + sprite.row - 1,
+            col: x + sprite.column - 1,
+          });
+      });
+    });
+
+    setTheSprite({
+      ...sprite,
+      sprite: converted,
+      height: sprite.width,
+      width: sprite.height,
+    });
   }, [keySpacePressed]);
 
   useEffect(() => {
