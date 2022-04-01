@@ -16,10 +16,9 @@ function App() {
     for (let x = 0; x < boardWidth; x++) {
       tempRow.push({
         ...empty,
-        color: y % 3 === 0 && x === 3 ? "bg-blue-400" : "bg-slate-400",
+        color: "bg-slate-400",
         col: y,
         row: x,
-        fixed: y % 3 === 0 && x === 3,
       });
     }
     emptyBoard.push(tempRow);
@@ -204,18 +203,33 @@ function App() {
   useEffect(() => {
     // move piece down G R A V I T Y
     if (sprite.row + sprite.height < boardHeight) {
-      setTheSprite({
-        ...sprite,
-        row: sprite.row + 1,
-        sprite: sprite.sprite.map((srow) =>
-          srow.map((spot) => {
-            return {
-              ...spot,
-              row: spot.row + 1,
-            };
-          })
-        ),
+      let allowed = true;
+      sprite.sprite.forEach((row) => {
+        row.forEach((spot) => {
+          const isFixed = board[spot.row + 1][spot.col]?.fixed;
+          if (isFixed) {
+            allowed = !isFixed;
+          }
+        });
       });
+
+      if (allowed) {
+        setTheSprite({
+          ...sprite,
+          row: sprite.row + 1,
+          sprite: sprite.sprite.map((srow) =>
+            srow.map((spot) => {
+              return {
+                ...spot,
+                row: spot.row + 1,
+              };
+            })
+          ),
+        });
+      } else {
+        setTheSprite(sprite, true);
+        setIsPieceSet(true);
+      }
     } else {
       setTheSprite(sprite, true);
       setIsPieceSet(true);
