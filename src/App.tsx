@@ -63,7 +63,8 @@ function App() {
           fixed,
         });
     });
-    setBoard(tempBoard);
+
+    setBoard(clearLines(tempBoard));
   };
 
   const setTheSprite = (newSprite: SpriteEntry, fixed?: boolean) => {
@@ -74,20 +75,18 @@ function App() {
     });
   };
 
-  const clearLines = () => {
-    const tempBoard = [...board];
-    const cleared = tempBoard.filter((row) =>
-      row.filter((spot) => spot.color !== "bg-slate-400").length === boardWidth
-        ? false
-        : true
-    );
+  const clearLines = (tempBoard: Spot[][]) => {
+    const cleared =
+      tempBoard.filter((row) =>
+        row.filter((spot) => spot.fixed).length === boardWidth ? false : true
+      ) ?? [];
     if (cleared.length < boardHeight) {
       for (let i = 0; i < boardHeight - cleared.length; i++) {
         cleared.unshift([...emptyRow]);
+        console.log("line cleared");
       }
-      setBoard(cleared);
-      console.log("line cleared");
     }
+    return cleared;
   };
 
   useEffect(() => {
@@ -158,7 +157,6 @@ function App() {
     }
 
     let timeout = setTimeout(() => {
-      pieceFixed && clearLines();
       setTime(time + 1);
     }, velocity);
 
