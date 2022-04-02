@@ -2,14 +2,20 @@
 /* eslint-disable no-debugger */
 import React, { useEffect, useState } from "react";
 import { useKeyPress } from "./hooks";
-import { Color, PieceSprite, Spot, Sprite, SpriteEntry } from "./types";
+import { Color, Column, PieceSprite, Spot, Sprite, SpriteEntry } from "./types";
 import * as sprites from "./sprites.json";
 import "./App.css";
 
 function App() {
   const boardWidth = 10;
   const boardHeight = 12;
-  const empty: Spot = { color: "bg-slate-400", fixed: false };
+  const empty: Spot = {
+    color: "bg-slate-400",
+    fixed: false,
+    row: 0,
+    col: 0,
+    value: "0",
+  };
   const emptyRow: Spot[] = new Array(boardWidth).fill({
     color: "bg-slate-400",
     fixed: false,
@@ -22,8 +28,9 @@ function App() {
       tempRow.push({
         ...empty,
         color: "bg-slate-400",
-        col: y,
-        row: x,
+        col: x,
+        row: y,
+        value: `r${y} c${x}`,
       });
     }
     emptyBoard.push(tempRow);
@@ -32,13 +39,17 @@ function App() {
   const pieceSprites: PieceSprite = sprites as PieceSprite;
 
   const [board, setBoard] = useState<Spot[][]>(emptyBoard);
-  const [sprite, setSprite] = useState<SpriteEntry>(pieceSprites.j);
+  const [piece, setPiece] = useState<SpriteEntry>(pieceSprites.j);
   const [velocity, setVelocity] = useState(1000);
   const [time, setTime] = useState(0);
+  const [dropPiece, setDropPiece] = useState(false);
+  const [fastGravity, setFastGravity] = useState(false);
 
   const keyLeftPressed = useKeyPress("ArrowLeft");
   const keyRightPressed = useKeyPress("ArrowRight");
+  const keyUpPressed = useKeyPress("ArrowUp");
   const keyDownPressed = useKeyPress("ArrowDown");
+  const keyWPressed = useKeyPress("w");
   const keyAPressed = useKeyPress("a");
   const keySPressed = useKeyPress("s");
   const keyDPressed = useKeyPress("d");
@@ -47,7 +58,20 @@ function App() {
   const rotateCounterCW = rotateCW && keyShiftPressed;
   const leftPressed = keyLeftPressed || keyAPressed;
   const rightPressed = keyRightPressed || keyDPressed;
-  const fastGravity = keyDownPressed || keySPressed;
+
+  useEffect(() => {
+    setFastGravity(keyDownPressed || keySPressed);
+  }, [keyDownPressed, keySPressed]);
+
+  useEffect(() => {
+    setDropPiece(keyUpPressed || keyWPressed);
+  }, [keyUpPressed, keyWPressed]);
+
+  const replaceSpotInBoard = (row: number, column: Column, newSpot: Spot) => {
+    const tempBoard = [...board];
+    tempBoard[row].splice(column, 1, newSpot);
+    setBoard(tempBoard);
+  };
 
   const colorTheSpots = (
     theSprite: SpriteEntry,
@@ -59,8 +83,11 @@ function App() {
       const isFixed = tempBoard[spriteSpot.row][spriteSpot.col]?.fixed;
       !isFixed &&
         tempBoard[spriteSpot.row].splice(spriteSpot.col, 1, {
+          row: spriteSpot.row,
+          col: spriteSpot.col,
           color: color,
           fixed,
+          value: `r${spriteSpot.row} c${spriteSpot.col}`,
         });
     });
 
@@ -68,7 +95,7 @@ function App() {
   };
 
   const setTheSprite = (newSprite: SpriteEntry, fixed?: boolean) => {
-    setSprite((oldSprite) => {
+    setPiece((oldSprite) => {
       colorTheSpots(oldSprite, "bg-slate-400", false);
       colorTheSpots(newSprite, newSprite.color, !!fixed);
       return newSprite;
@@ -90,15 +117,19 @@ function App() {
   };
 
   useEffect(() => {
+    time > 0 && setVelocity(dropPiece ? velocity / 10000 : velocity * 10000);
+  }, [dropPiece]);
+
+  useEffect(() => {
     time > 0 && setVelocity(fastGravity ? velocity / 10 : velocity * 10);
   }, [fastGravity]);
 
   useEffect(() => {
     // move piece down G R A V I T Y
     let pieceFixed = false;
-    if (sprite.row + sprite.height < boardHeight) {
+    if (piece.row + piece.height < boardHeight) {
       let allowed = true;
-      sprite.sprite.forEach((spot) => {
+      piece.sprite.forEach((spot) => {
         const isFixed = board[spot.row + 1][spot.col]?.fixed;
         if (isFixed) {
           allowed = !isFixed;
@@ -107,9 +138,9 @@ function App() {
 
       if (allowed) {
         setTheSprite({
-          ...sprite,
-          row: sprite.row + 1,
-          sprite: sprite.sprite.map((spot) => {
+          ...piece,
+          row: piece.row + 1,
+          sprite: piece.sprite.map((spot) => {
             return {
               ...spot,
               row: spot.row + 1,
@@ -117,19 +148,21 @@ function App() {
           }),
         });
       } else {
-        setTheSprite(sprite, true);
+        setTheSprite(piece, true);
         pieceFixed = true;
       }
     } else {
-      setTheSprite(sprite, true);
+      setTheSprite(piece, true);
       pieceFixed = true;
     }
 
     if (pieceFixed) {
+      dropPiece && setDropPiece(false);
+      fastGravity && setFastGravity(false);
       // get next sprite
       let nextPiece = pieceSprites["j"];
       // switch (Math.floor(Math.random() * 6)) {
-      switch (sprite.name) {
+      switch (piece.name) {
         case "i":
           nextPiece = pieceSprites["j"];
           break;
@@ -169,9 +202,7 @@ function App() {
 
   useEffect(() => {
     // move left or right
-    const magnitude = leftPressed
-      ? sprite.column
-      : sprite.column + sprite.width;
+    const magnitude = leftPressed ? piece.column : piece.column + piece.width;
     const direction =
       leftPressed && magnitude > 0
         ? -1
@@ -179,7 +210,7 @@ function App() {
         ? 1
         : 0;
     let allowed = true;
-    sprite.sprite.forEach((spot) => {
+    piece.sprite.forEach((spot) => {
       const isFixed = board[spot.row][spot.col + direction]?.fixed;
       if (isFixed) {
         allowed = !isFixed;
@@ -188,9 +219,9 @@ function App() {
 
     allowed &&
       setTheSprite({
-        ...sprite,
-        column: sprite.column + direction,
-        sprite: sprite.sprite.map((spot) => {
+        ...piece,
+        column: piece.column + direction,
+        sprite: piece.sprite.map((spot) => {
           return {
             ...spot,
             col: spot.col + direction,
@@ -206,7 +237,7 @@ function App() {
       return;
     }
     let count = 1;
-    let max = Math.max(sprite.height, sprite.width) + 1;
+    let max = Math.max(piece.height, piece.width) + 1;
 
     let tempMatrix: number[][] = [];
     for (let y = 0; y < max; y++) {
@@ -215,8 +246,8 @@ function App() {
         tempMatrix[y].push(0);
       }
     }
-    sprite.sprite.forEach((s) => {
-      tempMatrix[s.row - sprite.row + 1][s.col - sprite.column + 1] = count++;
+    piece.sprite.forEach((s) => {
+      tempMatrix[s.row - piece.row + 1][s.col - piece.column + 1] = count++;
     });
 
     let rotated: number[][] = [...tempMatrix];
@@ -232,8 +263,8 @@ function App() {
         const index = spot > 0 ? spot - 1 : -1;
         index >= 0 &&
           converted?.splice(index, 0, {
-            row: y + sprite.row - 1,
-            col: x + sprite.column - 1,
+            row: y + piece.row - 1,
+            col: x + piece.column - 1,
           });
       });
     });
@@ -247,10 +278,10 @@ function App() {
     );
 
     setTheSprite({
-      ...sprite,
+      ...piece,
       sprite: converted,
-      height: sprite.width,
-      width: sprite.height,
+      height: piece.width,
+      width: piece.height,
       row: cornerPosition.row,
       column: cornerPosition.col,
     });
@@ -283,7 +314,9 @@ export const Row = ({ spots }: RowProps) => {
             <div
               key={`spot-${index}`}
               className={`${spot.color} w-16 h-16 m-auto border`}
-            ></div>
+            >
+              {/* {spot.value} */}
+            </div>
           );
         })}
     </div>

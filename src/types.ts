@@ -24,9 +24,9 @@ export interface ShapeMap {
 }
 
 export interface Spot {
-  row?: number;
-  col?: Column;
-  value?: number;
+  row: number;
+  col: Column;
+  value: string;
   color: Color;
   fixed: boolean;
 }
