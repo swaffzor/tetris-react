@@ -33,17 +33,21 @@ function App() {
 
   const [board, setBoard] = useState<Spot[][]>(emptyBoard);
   const [sprite, setSprite] = useState<SpriteEntry>(pieceSprites.j);
+  const [velocity, setVelocity] = useState(1000);
   const [time, setTime] = useState(0);
 
   const keyLeftPressed = useKeyPress("ArrowLeft");
-  const keyAPressed = useKeyPress("a");
   const keyRightPressed = useKeyPress("ArrowRight");
+  const keyDownPressed = useKeyPress("ArrowDown");
+  const keyAPressed = useKeyPress("a");
+  const keySPressed = useKeyPress("s");
   const keyDPressed = useKeyPress("d");
   const keyShiftPressed = useKeyPress("Shift");
   const rotateCW = useKeyPress(" ");
   const rotateCounterCW = rotateCW && keyShiftPressed;
   const leftPressed = keyLeftPressed || keyAPressed;
   const rightPressed = keyRightPressed || keyDPressed;
+  const fastGravity = keyDownPressed || keySPressed;
 
   const colorTheSpots = (
     theSprite: SpriteEntry,
@@ -85,6 +89,10 @@ function App() {
       console.log("line cleared");
     }
   };
+
+  useEffect(() => {
+    time > 0 && setVelocity(fastGravity ? velocity / 10 : velocity * 10);
+  }, [fastGravity]);
 
   useEffect(() => {
     // move piece down G R A V I T Y
@@ -152,10 +160,10 @@ function App() {
     let timeout = setTimeout(() => {
       pieceFixed && clearLines();
       setTime(time + 1);
-    }, 1000);
+    }, velocity);
 
     return () => clearInterval(timeout);
-  }, [time]);
+  }, [time, velocity]);
 
   // const timer = async () => {
   //   return new Promise((res =>))
