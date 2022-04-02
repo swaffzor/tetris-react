@@ -1,0 +1,184 @@
+{
+  "i": {
+    "name": "i",
+    "color": "bg-blue-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 4
+      },
+      {
+        "row": 2,
+        "col": 4
+      },
+      {
+        "row": 3,
+        "col": 4
+      }
+    ],
+    "height": 4,
+    "width": 1,
+    "row": 0,
+    "column": 4
+  },
+  "j": {
+    "name": "j",
+    "color": "bg-red-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 6
+      }
+    ],
+    "height": 2,
+    "width": 3,
+    "row": 0,
+    "column": 4
+  },
+  "l": {
+    "name": "l",
+    "color": "bg-orange-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 6
+      },
+      {
+        "row": 1,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 6
+      }
+    ],
+    "height": 2,
+    "width": 3,
+    "row": 0,
+    "column": 4
+  },
+  "o": {
+    "name": "o",
+    "color": "bg-yellow-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 4
+      },
+      {
+        "row": 0,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 5
+      }
+    ],
+    "height": 2,
+    "width": 2,
+    "row": 0,
+    "column": 4
+  },
+  "s": {
+    "name": "s",
+    "color": "bg-green-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 5
+      },
+      {
+        "row": 0,
+        "col": 6
+      },
+      {
+        "row": 1,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 5
+      }
+    ],
+    "height": 2,
+    "width": 3,
+    "row": 0,
+    "column": 4
+  },
+  "t": {
+    "name": "t",
+    "color": "bg-pink-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 4
+      },
+      {
+        "row": 1,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 6
+      }
+    ],
+    "height": 2,
+    "width": 3,
+    "row": 0,
+    "column": 4
+  },
+  "z": {
+    "name": "z",
+    "color": "bg-purple-400",
+    "sprite": [
+      {
+        "row": 0,
+        "col": 4
+      },
+      {
+        "row": 0,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 5
+      },
+      {
+        "row": 1,
+        "col": 6
+      }
+    ],
+    "height": 2,
+    "width": 3,
+    "row": 0,
+    "column": 4
+  }
+}

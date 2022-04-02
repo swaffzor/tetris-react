@@ -1,8 +1,9 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-debugger */
 import React, { useEffect, useState } from "react";
-import { useDebounce, useKeyPress, useThrottle } from "./hooks";
+import { useKeyPress } from "./hooks";
 import { Color, PieceSprite, Spot, Sprite, SpriteEntry } from "./types";
+import * as sprites from "./sprites.json";
 import "./App.css";
 
 function App() {
@@ -28,118 +29,19 @@ function App() {
     emptyBoard.push(tempRow);
   }
 
-  const pieceSprites: PieceSprite = {
-    i: {
-      name: "i",
-      color: "bg-blue-400",
-      sprite: [
-        { row: 0, col: 4 },
-        { row: 1, col: 4 },
-        { row: 2, col: 4 },
-        { row: 3, col: 4 },
-      ],
-      height: 4,
-      width: 1,
-      row: 0,
-      column: 4,
-    },
-    j: {
-      name: "j",
-      color: "bg-red-400",
-      sprite: [
-        { row: 0, col: 4 },
-        { row: 1, col: 4 },
-        { row: 1, col: 5 },
-        { row: 1, col: 6 },
-      ],
-      height: 2,
-      width: 3,
-      row: 0,
-      column: 4,
-    },
-    l: {
-      name: "l",
-      color: "bg-orange-400",
-      sprite: [
-        { row: 0, col: 6 },
-        { row: 1, col: 4 },
-        { row: 1, col: 5 },
-        { row: 1, col: 6 },
-      ],
-      height: 2,
-      width: 3,
-      row: 0,
-      column: 4,
-    },
-    o: {
-      name: "o",
-      color: "bg-yellow-400",
-      sprite: [
-        { row: 0, col: 4 },
-        { row: 0, col: 5 },
-        { row: 1, col: 4 },
-        { row: 1, col: 5 },
-      ],
-      height: 2,
-      width: 2,
-      row: 0,
-      column: 4,
-    },
-    s: {
-      name: "s",
-      color: "bg-green-400",
-      sprite: [
-        { row: 0, col: 5 },
-        { row: 0, col: 6 },
-        { row: 1, col: 4 },
-        { row: 1, col: 5 },
-      ],
-      height: 2,
-      width: 3,
-      row: 0,
-      column: 4,
-    },
-    t: {
-      name: "t",
-      color: "bg-pink-400",
-      sprite: [
-        { row: 0, col: 5 },
-        { row: 1, col: 4 },
-        { row: 1, col: 5 },
-        { row: 1, col: 6 },
-      ],
-      height: 2,
-      width: 3,
-      row: 0,
-      column: 4,
-    },
-    z: {
-      name: "z",
-      color: "bg-purple-400",
-      sprite: [
-        { row: 0, col: 4 },
-        { row: 0, col: 5 },
-        { row: 1, col: 5 },
-        { row: 1, col: 6 },
-      ],
-      height: 2,
-      width: 3,
-      row: 0,
-      column: 4,
-    },
-  };
+  const pieceSprites: PieceSprite = sprites as PieceSprite;
 
   const [board, setBoard] = useState<Spot[][]>(emptyBoard);
-  const [sprite, setSprite] = useState<SpriteEntry>(pieceSprites.i);
+  const [sprite, setSprite] = useState<SpriteEntry>(pieceSprites.j);
   const [time, setTime] = useState(0);
-  const [isPieceSet, setIsPieceSet] = useState(false);
 
   const keyLeftPressed = useKeyPress("ArrowLeft");
   const keyAPressed = useKeyPress("a");
   const keyRightPressed = useKeyPress("ArrowRight");
   const keyDPressed = useKeyPress("d");
-  const keySpacePressed = useKeyPress(" ");
-  // const keySpacePressed = useDebounce(spacePressed, 150);
+  const keyShiftPressed = useKeyPress("Shift");
+  const rotateCW = useKeyPress(" ");
+  const rotateCounterCW = rotateCW && keyShiftPressed;
   const leftPressed = keyLeftPressed || keyAPressed;
   const rightPressed = keyRightPressed || keyDPressed;
 
@@ -150,7 +52,7 @@ function App() {
   ) => {
     const tempBoard = [...board];
     theSprite.sprite.forEach((spriteSpot) => {
-      const isFixed = tempBoard[spriteSpot.row][spriteSpot.col].fixed;
+      const isFixed = tempBoard[spriteSpot.row][spriteSpot.col]?.fixed;
       !isFixed &&
         tempBoard[spriteSpot.row].splice(spriteSpot.col, 1, {
           color: color,
@@ -185,26 +87,6 @@ function App() {
   };
 
   useEffect(() => {
-    const tempBoard = [...board];
-    sprite.sprite.forEach((spriteSpot, rowIndex) => {
-      // color spot above falling sprite
-      if (rowIndex === 0) {
-        tempBoard[spriteSpot.row - 1]?.splice(spriteSpot.col, 1, {
-          color: "bg-slate-400",
-          fixed: false,
-        });
-      }
-      // color each spot on board where sprite is
-      tempBoard[spriteSpot.row].splice(spriteSpot.col, 1, {
-        color: sprite.color,
-        fixed: false,
-      });
-    });
-
-    setBoard(tempBoard);
-  }, [sprite]);
-
-  useEffect(() => {
     // move piece down G R A V I T Y
     let pieceFixed = false;
     if (sprite.row + sprite.height < boardHeight) {
@@ -229,18 +111,48 @@ function App() {
         });
       } else {
         setTheSprite(sprite, true);
-        setIsPieceSet(true);
         pieceFixed = true;
       }
     } else {
       setTheSprite(sprite, true);
-      setIsPieceSet(true);
       pieceFixed = true;
     }
+
+    if (pieceFixed) {
+      // get next sprite
+      let nextPiece = pieceSprites["j"];
+      // switch (Math.floor(Math.random() * 6)) {
+      switch (sprite.name) {
+        case "i":
+          nextPiece = pieceSprites["j"];
+          break;
+        case "j":
+          nextPiece = pieceSprites["l"];
+          break;
+        case "l":
+          nextPiece = pieceSprites["o"];
+          break;
+        case "o":
+          nextPiece = pieceSprites["s"];
+          break;
+        case "s":
+          nextPiece = pieceSprites["t"];
+          break;
+        case "t":
+          nextPiece = pieceSprites["z"];
+          break;
+        case "z":
+        default:
+          nextPiece = pieceSprites["i"];
+          break;
+      }
+      setTheSprite(nextPiece);
+    }
+
     let timeout = setTimeout(() => {
       pieceFixed && clearLines();
       setTime(time + 1);
-    }, 500);
+    }, 1000);
 
     return () => clearInterval(timeout);
   }, [time]);
@@ -251,67 +163,62 @@ function App() {
 
   useEffect(() => {
     // move left or right
-    if (!isPieceSet) {
-      const magnitude = leftPressed
-        ? sprite.column
-        : sprite.column + sprite.width;
-      const direction =
-        leftPressed && magnitude > 0
-          ? -1
-          : rightPressed && magnitude < boardWidth
-          ? 1
-          : 0;
-      let allowed = true;
-      sprite.sprite.forEach((spot) => {
-        const isFixed = board[spot.row][spot.col + direction]?.fixed;
-        if (isFixed) {
-          allowed = !isFixed;
-        }
-      });
+    const magnitude = leftPressed
+      ? sprite.column
+      : sprite.column + sprite.width;
+    const direction =
+      leftPressed && magnitude > 0
+        ? -1
+        : rightPressed && magnitude < boardWidth
+        ? 1
+        : 0;
+    let allowed = true;
+    sprite.sprite.forEach((spot) => {
+      const isFixed = board[spot.row][spot.col + direction]?.fixed;
+      if (isFixed) {
+        allowed = !isFixed;
+      }
+    });
 
-      allowed &&
-        setTheSprite({
-          ...sprite,
-          column: sprite.column + direction,
-          sprite: sprite.sprite.map((spot) => {
-            return {
-              ...spot,
-              col: spot.col + direction,
-            };
-          }),
-        });
-    }
-  }, [leftPressed, rightPressed, isPieceSet]);
+    allowed &&
+      setTheSprite({
+        ...sprite,
+        column: sprite.column + direction,
+        sprite: sprite.sprite.map((spot) => {
+          return {
+            ...spot,
+            col: spot.col + direction,
+          };
+        }),
+      });
+  }, [leftPressed, rightPressed]);
 
   useEffect(() => {
-    if (!keySpacePressed) {
+    // rotation
+    // debounce protection
+    if (!rotateCW && !rotateCounterCW) {
       return;
     }
     let count = 1;
     let max = Math.max(sprite.height, sprite.width) + 1;
-    let tempMatrix: number[][] = [];
 
+    let tempMatrix: number[][] = [];
     for (let y = 0; y < max; y++) {
       tempMatrix.push([]);
       for (let x = 0; x < max; x++) {
         tempMatrix[y].push(0);
       }
     }
-    const reducedMatrix = sprite.sprite.map((s) => {
-      return {
-        ...s,
-        row: s.row - sprite.row + 1,
-        col: s.col - sprite.column + 1,
-      };
+    sprite.sprite.forEach((s) => {
+      tempMatrix[s.row - sprite.row + 1][s.col - sprite.column + 1] = count++;
     });
 
-    reducedMatrix.forEach((spot) => {
-      tempMatrix[spot.row][spot.col] = count++;
-    });
-
-    const rotated = tempMatrix[0].map((val, index) =>
-      tempMatrix.map((row) => row[index]).reverse()
-    );
+    let rotated: number[][] = [...tempMatrix];
+    for (let i = 0; i < (rotateCounterCW ? 3 : 1); i++) {
+      rotated = rotated[0].map((val, index) =>
+        rotated.map((row) => row[index]).reverse()
+      );
+    }
 
     const converted: Sprite = [];
     rotated.forEach((row, y) => {
@@ -324,46 +231,24 @@ function App() {
           });
       });
     });
+    const cornerPosition = converted.reduce(
+      (lowest, current) => {
+        const col = lowest.col < current.col ? lowest.col : current.col;
+        const row = lowest.row < current.row ? lowest.row : current.row;
+        return { col, row };
+      },
+      { col: converted[0].col, row: converted[0].row }
+    );
 
     setTheSprite({
       ...sprite,
       sprite: converted,
       height: sprite.width,
       width: sprite.height,
+      row: cornerPosition.row,
+      column: cornerPosition.col,
     });
-  }, [keySpacePressed]);
-
-  useEffect(() => {
-    // get next sprite
-    let nextPiece = pieceSprites["i"];
-    // switch (Math.floor(Math.random() * 6)) {
-    switch (sprite.name) {
-      case "i":
-        nextPiece = pieceSprites["j"];
-        break;
-      case "j":
-        nextPiece = pieceSprites["l"];
-        break;
-      case "l":
-        nextPiece = pieceSprites["o"];
-        break;
-      case "o":
-        nextPiece = pieceSprites["s"];
-        break;
-      case "s":
-        nextPiece = pieceSprites["t"];
-        break;
-      case "t":
-        nextPiece = pieceSprites["z"];
-        break;
-      case "z":
-      default:
-        nextPiece = pieceSprites["i"];
-        break;
-    }
-    setTheSprite(nextPiece);
-    setIsPieceSet(false);
-  }, [isPieceSet]);
+  }, [rotateCW, rotateCounterCW]);
 
   return (
     <div className="">
