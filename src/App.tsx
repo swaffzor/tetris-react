@@ -9,6 +9,10 @@ function App() {
   const boardWidth = 10;
   const boardHeight = 12;
   const empty: Spot = { color: "bg-slate-400", fixed: false };
+  const emptyRow: Spot[] = new Array(boardWidth).fill({
+    color: "bg-slate-400",
+    fixed: false,
+  });
   const emptyBoard: Spot[][] = [];
   // init an empty board
   for (let y = 0; y < boardHeight; y++) {
@@ -164,6 +168,22 @@ function App() {
     });
   };
 
+  const clearLines = () => {
+    const tempBoard = [...board];
+    const cleared = tempBoard.filter((row) =>
+      row.filter((spot) => spot.color !== "bg-slate-400").length === boardWidth
+        ? false
+        : true
+    );
+    if (cleared.length < boardHeight) {
+      for (let i = 0; i < boardHeight - cleared.length; i++) {
+        cleared.unshift([...emptyRow]);
+      }
+      setBoard(cleared);
+      console.log("line cleared");
+    }
+  };
+
   useEffect(() => {
     const tempBoard = [...board];
     sprite.sprite.forEach((spriteSpot, rowIndex) => {
@@ -186,6 +206,7 @@ function App() {
 
   useEffect(() => {
     // move piece down G R A V I T Y
+    let pieceFixed = false;
     if (sprite.row + sprite.height < boardHeight) {
       let allowed = true;
       sprite.sprite.forEach((spot) => {
@@ -209,17 +230,24 @@ function App() {
       } else {
         setTheSprite(sprite, true);
         setIsPieceSet(true);
+        pieceFixed = true;
       }
     } else {
       setTheSprite(sprite, true);
       setIsPieceSet(true);
+      pieceFixed = true;
     }
-    const timeout = setTimeout(() => {
+    let timeout = setTimeout(() => {
+      pieceFixed && clearLines();
       setTime(time + 1);
     }, 500);
 
     return () => clearInterval(timeout);
   }, [time]);
+
+  // const timer = async () => {
+  //   return new Promise((res =>))
+  // }
 
   useEffect(() => {
     // move left or right
