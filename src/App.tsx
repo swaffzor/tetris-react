@@ -41,6 +41,7 @@ function App() {
   const [board, setBoard] = useState<Spot[][]>(emptyBoard);
   const [piece, setPiece] = useState<SpriteEntry>(pieceSprites.j);
   const [velocity, setVelocity] = useState(1000);
+  const [levelVelocity, setLevelVelocity] = useState(1000);
   const [time, setTime] = useState(0);
   const [dropPiece, setDropPiece] = useState(false);
   const [fastGravity, setFastGravity] = useState(false);
@@ -112,16 +113,22 @@ function App() {
         cleared.unshift([...emptyRow]);
         console.log("line cleared");
       }
+
+      setLevelVelocity(levelVelocity - 10);
     }
     return cleared;
   };
 
   useEffect(() => {
-    time > 0 && setVelocity(dropPiece ? velocity / 10000 : velocity * 10000);
+    console.log(levelVelocity);
+  }, [levelVelocity]);
+
+  useEffect(() => {
+    time > 0 && setVelocity(dropPiece ? velocity / 10000 : levelVelocity);
   }, [dropPiece]);
 
   useEffect(() => {
-    time > 0 && setVelocity(fastGravity ? velocity / 10 : velocity * 10);
+    time > 0 && setVelocity(fastGravity ? velocity / 10 : levelVelocity);
   }, [fastGravity]);
 
   useEffect(() => {
@@ -157,8 +164,8 @@ function App() {
     }
 
     if (pieceFixed) {
-      dropPiece && setDropPiece(false);
-      fastGravity && setFastGravity(false);
+      setDropPiece(false);
+      setFastGravity(false);
       // get next sprite
       let nextPiece = pieceSprites["j"];
       // switch (Math.floor(Math.random() * 6)) {
