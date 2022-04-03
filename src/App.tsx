@@ -36,10 +36,32 @@ function App() {
     emptyBoard.push(tempRow);
   }
 
+  const emptyNextBoard: Spot[][] = [];
+  for (let y = 0; y < 4; y++) {
+    const tempRow: Spot[] = [];
+    for (let x = 0; x < 4; x++) {
+      tempRow.push({
+        ...empty,
+        color: "bg-slate-200",
+        col: x,
+        row: y,
+        value: `r${y} c${x}`,
+      });
+    }
+    emptyNextBoard.push(tempRow);
+  }
+
   const pieceSprites: PieceSprite = sprites as PieceSprite;
 
   const [board, setBoard] = useState<Spot[][]>(emptyBoard);
   const [piece, setPiece] = useState<SpriteEntry>(pieceSprites.j);
+  const [nextPiece, setNextPiece] = useState<SpriteEntry>(pieceSprites.t);
+  const [nextBoard, setNextBoard] = useState<Spot[][]>(emptyNextBoard);
+  const [nextQueue, setNextQueue] = useState<SpriteEntry[]>([
+    pieceSprites.t,
+    pieceSprites.j,
+  ]);
+
   const [velocity, setVelocity] = useState(1000);
   const [levelVelocity, setLevelVelocity] = useState(1000);
   const [time, setTime] = useState(0);
@@ -93,6 +115,29 @@ function App() {
     });
 
     setBoard(clearLines(tempBoard));
+  };
+
+  const colorNextBoard = (theSprite: SpriteEntry) => {
+    const tempBoard = [...nextBoard].map((r) =>
+      r.map((s) => {
+        return {
+          ...s,
+          color: "bg-slate-200",
+        } as Spot;
+      })
+    );
+
+    theSprite.sprite.forEach((spriteSpot) => {
+      const tcol = spriteSpot.col - 3;
+      tempBoard[spriteSpot.row].splice(tcol, 1, {
+        row: 0,
+        col: tcol,
+        color: theSprite.color,
+        fixed: false,
+        value: `r${spriteSpot.row} c${spriteSpot.col}`,
+      });
+    });
+    setNextBoard(tempBoard);
   };
 
   const setTheSprite = (newSprite: SpriteEntry, fixed?: boolean) => {
@@ -166,34 +211,40 @@ function App() {
     if (pieceFixed) {
       setDropPiece(false);
       setFastGravity(false);
+      setTheSprite(nextPiece);
       // get next sprite
-      let nextPiece = pieceSprites["j"];
+      let next = pieceSprites["j"];
       // switch (Math.floor(Math.random() * 6)) {
       switch (piece.name) {
         case "i":
-          nextPiece = pieceSprites["j"];
+          next = pieceSprites["j"];
           break;
         case "j":
-          nextPiece = pieceSprites["l"];
+          next = pieceSprites["l"];
           break;
         case "l":
-          nextPiece = pieceSprites["o"];
+          next = pieceSprites["o"];
           break;
         case "o":
-          nextPiece = pieceSprites["s"];
+          next = pieceSprites["s"];
           break;
         case "s":
-          nextPiece = pieceSprites["t"];
+          next = pieceSprites["t"];
           break;
         case "t":
-          nextPiece = pieceSprites["z"];
+          next = pieceSprites["z"];
           break;
         case "z":
         default:
-          nextPiece = pieceSprites["i"];
+          next = pieceSprites["i"];
           break;
       }
-      setTheSprite(nextPiece);
+      // setNextPiece(next);
+      // const tempQ = [...nextQueue];
+      // tempQ.push(next);
+      // setNextQueue(tempQ);
+      setNextPiece(next);
+      colorNextBoard(next);
     }
 
     let timeout = setTimeout(() => {
@@ -295,13 +346,36 @@ function App() {
   }, [rotateCW, rotateCounterCW]);
 
   return (
-    <div className="">
-      <div className="max-w-2xl m-2">
-        <div className="m-x-auto">
+    <div className="flex">
+      <div className="flex w-screen m-2">
+        <div className="">
           {board.map((row, index) => {
-            return <Row key={index} spots={row} />;
+            return (
+              <Row
+                key={index}
+                spots={row}
+                width="w-16"
+                height="h-16"
+                border="border-slate-300"
+              />
+            );
           })}
         </div>
+        <fieldset className="border-2 border-black rounded ">
+          <legend>ReacTris ⚛️</legend>
+          Next
+          {nextBoard.map((row, nextIndex) => {
+            return (
+              <Row
+                key={`next-${nextIndex}`}
+                spots={row}
+                width="w-4"
+                height="h-4"
+                border="border-white"
+              />
+            );
+          })}
+        </fieldset>
       </div>
     </div>
   );
@@ -311,16 +385,19 @@ export default App;
 
 interface RowProps {
   spots: Spot[];
+  width: string;
+  height: string;
+  border: string;
 }
-export const Row = ({ spots }: RowProps) => {
+export const Row = ({ spots, border, width, height }: RowProps) => {
   return (
-    <div className="grid grid-cols-10 ">
+    <div className="grid grid-cols-10">
       {spots.length > 0 &&
         spots?.map((spot, index) => {
           return (
             <div
               key={`spot-${index}`}
-              className={`${spot.color} w-16 h-16 m-auto border`}
+              className={`${spot.color} ${width} ${height} m-auto border ${border}`}
             >
               {/* {spot.value} */}
             </div>

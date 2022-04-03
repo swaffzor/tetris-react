@@ -1,4 +1,5 @@
 export type Color =
+  | "bg-white"
   | "bg-slate-400"
   | "bg-slate-200"
   | "bg-blue-400"
