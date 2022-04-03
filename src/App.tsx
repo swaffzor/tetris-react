@@ -7,8 +7,8 @@ import * as sprites from "./sprites.json";
 import "./App.css";
 
 function App() {
-  const boardWidth = 10;
-  const boardHeight = 12;
+  const boardWidth = 12;
+  const boardHeight = 20;
   const empty: Spot = {
     color: "bg-slate-400",
     fixed: false,
@@ -346,35 +346,43 @@ function App() {
   }, [rotateCW, rotateCounterCW]);
 
   return (
-    <div className="flex">
-      <div className="flex w-screen m-2">
-        <div className="">
+    <div className="flex h-screen dark:bg-slate-900">
+      <div className="relative flex p-4 m-2">
+        <div
+          className={`px-4 mx-auto grid gap-0 grid-cols-${boardWidth.toString()} place-content-center content-start`}
+        >
           {board.map((row, index) => {
             return (
               <Row
+                boardWidth={boardWidth}
                 key={index}
                 spots={row}
-                width="w-16"
-                height="h-16"
+                width="w-8"
+                height="h-8"
                 border="border-slate-300"
               />
             );
           })}
         </div>
-        <fieldset className="border-2 border-black rounded ">
-          <legend>ReacTris ⚛️</legend>
-          Next
-          {nextBoard.map((row, nextIndex) => {
-            return (
-              <Row
-                key={`next-${nextIndex}`}
-                spots={row}
-                width="w-4"
-                height="h-4"
-                border="border-white"
-              />
-            );
-          })}
+
+        <fieldset className="p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400">
+          <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
+            Next Queue
+          </legend>
+          <div className={`grid gap-0 grid-cols-4 place-content-center`}>
+            {nextBoard.map((row, nextIndex) => {
+              return (
+                <Row
+                  boardWidth={4}
+                  key={`next-${nextIndex}`}
+                  spots={row}
+                  width="w-4"
+                  height="h-4"
+                  border="border-white"
+                />
+              );
+            })}
+          </div>
         </fieldset>
       </div>
     </div>
@@ -384,14 +392,15 @@ function App() {
 export default App;
 
 interface RowProps {
+  boardWidth: number;
   spots: Spot[];
   width: string;
   height: string;
   border: string;
 }
-export const Row = ({ spots, border, width, height }: RowProps) => {
+export const Row = ({ boardWidth, spots, border, width, height }: RowProps) => {
   return (
-    <div className="grid grid-cols-10">
+    <>
       {spots.length > 0 &&
         spots?.map((spot, index) => {
           return (
@@ -403,6 +412,6 @@ export const Row = ({ spots, border, width, height }: RowProps) => {
             </div>
           );
         })}
-    </div>
+    </>
   );
 };
