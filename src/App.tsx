@@ -79,6 +79,7 @@ function App() {
   const [velocity, setVelocity] = useState(700);
   const [levelVelocity, setLevelVelocity] = useState(700);
   const [time, setTime] = useState(0);
+  const [gameMode, setGameMode] = useState(1);
   const [dropPiece, setDropPiece] = useState(false);
   const [fastGravity, setFastGravity] = useState(false);
 
@@ -102,47 +103,42 @@ function App() {
     [BoardType.Stage]: {
       board: stageBoard,
       set: setStageBoard,
+      bgColor: "bg-slate-400",
     },
     [BoardType.Next]: {
       board: nextBoard,
       set: setNextBoard,
+      bgColor: "bg-slate-200",
     },
     [BoardType.Swap]: {
       board: swappedBoard,
       set: setSwappedBoard,
+      bgColor: "bg-slate-200",
     },
   };
 
   useEffect(() => {
     if (swappPressed) {
       swappPressed = false;
-      setPiece((oldPiece) => {
-        debugger;
-        console.log("SWAP");
-        let newPiece = swappedPiece;
-        if (!newPiece) {
-          newPiece = nextPiece;
-          const piece = pieceOptions.charAt(Math.floor(Math.random() * 6));
-          colorPieceOnBoard(
-            pieceSprites[piece],
-            BoardType.Next,
-            "bg-slate-400"
-          );
-        }
+      console.log("SWAP");
+      let newPiece = swappedPiece;
+      if (!newPiece) {
+        newPiece = nextPiece;
+        const piece = pieceOptions.charAt(Math.floor(Math.random() * 6));
+        colorPieceOnBoard(pieceSprites[piece], BoardType.Next);
+        setNextPiece(pieceSprites[piece]);
+      }
 
-        colorPieceOnBoard(
-          pieceSprites[newPiece.name],
-          BoardType.Stage,
-          "bg-slate-400"
-        );
-        colorPieceOnBoard(
-          pieceSprites[oldPiece.name],
-          BoardType.Swap,
-          "bg-slate-200"
-        );
-        setSwappedPiece(oldPiece);
-        return newPiece;
-      });
+      newPiece.column = pieceSprites[newPiece.name].column;
+      newPiece.row = pieceSprites[newPiece.name].row;
+      newPiece.sprite = pieceSprites[newPiece.name].sprite;
+
+      // clear board of previous piece
+      colorPieceOnBoard({ ...piece, color: "bg-slate-400" }, BoardType.Stage);
+
+      colorPieceOnBoard(pieceSprites[piece.name], BoardType.Swap);
+      setSwappedPiece(piece);
+      setPiece(newPiece);
     }
   }, [swappPressed]);
 
@@ -177,17 +173,13 @@ function App() {
     setStageBoard(clearLines(tempBoard));
   };
 
-  const colorPieceOnBoard = (
-    thePiece: Piece,
-    boardType: BoardType,
-    color: Color
-  ) => {
+  const colorPieceOnBoard = (thePiece: Piece, boardType: BoardType) => {
     const tempBoard = [...boards[boardType].board].map((row) =>
       row.map((spot) => {
         return {
           ...spot,
-          color: spot.fixed ? spot.color : color,
-        } as Spot;
+          color: spot.fixed ? spot.color : boards[boardType].bgColor,
+        };
       })
     );
 
@@ -207,7 +199,11 @@ function App() {
   const setThePiece = (newSprite: Piece, fixed?: boolean) => {
     setPiece((oldSprite) => {
       colorTheSpots(oldSprite, "bg-slate-400", false);
-      colorTheSpots(newSprite, newSprite.color, !!fixed);
+      colorTheSpots(
+        newSprite,
+        fixed ? (newSprite.color.replace("4", "6") as Color) : newSprite.color,
+        !!fixed
+      );
       return newSprite;
     });
   };
@@ -227,10 +223,6 @@ function App() {
     }
     return cleared;
   };
-
-  useEffect(() => {
-    console.log(levelVelocity);
-  }, [levelVelocity]);
 
   useEffect(() => {
     time > 0 && setVelocity(dropPiece ? velocity / 10000 : levelVelocity);
@@ -275,11 +267,10 @@ function App() {
     if (pieceFixed) {
       setDropPiece(false);
       setFastGravity(false);
-      setThePiece(nextPiece);
       // get next sprite
       let next = pieceSprites["j"];
       // switch (Math.floor(Math.random() * 6)) {
-      switch (piece.name) {
+      switch (nextPiece.name) {
         case "i":
           next = pieceSprites["j"];
           break;
@@ -306,8 +297,9 @@ function App() {
       const tempQ = [...nextQueue];
       tempQ.push(next);
       setNextQueue(tempQ);
+      setThePiece(nextPiece);
       setNextPiece(next);
-      colorPieceOnBoard(next, BoardType.Next, "bg-slate-200");
+      colorPieceOnBoard(next, BoardType.Next);
     }
 
     let timeout = setTimeout(() => {
@@ -495,7 +487,7 @@ export const Row = ({ spots, border, width, height }: RowProps) => {
                     ? "rounded-xs border"
                     : spot.color === "bg-slate-400"
                     ? "border border-slate-500" //affects grid
-                    : " border", // piece/cursor
+                    : "border", // piece/cursor
                 ].join(" ")}
               >
                 {/* {spot.value} */}

@@ -32,6 +32,7 @@ export type BoardMap = {
   [key in BoardType]: {
     board: Board;
     set: React.Dispatch<React.SetStateAction<Board>>;
+    bgColor: Color;
   };
 };
 
