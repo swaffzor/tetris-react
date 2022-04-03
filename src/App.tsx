@@ -87,7 +87,7 @@ function App() {
   }, [keyDownPressed, keySPressed]);
 
   useEffect(() => {
-    setDropPiece(keyUpPressed || keyWPressed);
+    (keyUpPressed || keyWPressed) && setDropPiece(true);
   }, [keyUpPressed, keyWPressed]);
 
   const replaceSpotInBoard = (row: number, column: Column, newSpot: Spot) => {
