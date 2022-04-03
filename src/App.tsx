@@ -16,9 +16,10 @@ import * as sprites from "./sprites.json";
 import "./App.css";
 
 function App() {
-  const pieceOptions = "ijlostz";
   const boardWidth = 12;
   const boardHeight = 20;
+  const pieceOptions = "ijlostz";
+  const velocityStart = 700;
   const empty: Spot = {
     color: "bg-slate-400",
     fixed: false,
@@ -76,8 +77,8 @@ function App() {
     pieceSprites.j,
   ]);
 
-  const [velocity, setVelocity] = useState(700);
-  const [levelVelocity, setLevelVelocity] = useState(700);
+  const [velocity, setVelocity] = useState(velocityStart);
+  const [levelVelocity, setLevelVelocity] = useState(velocityStart);
   const [time, setTime] = useState(0);
   const [gameMode, setGameMode] = useState(1);
   const [dropPiece, setDropPiece] = useState(false);
@@ -163,6 +164,15 @@ function App() {
     setStageBoard(tempBoard);
   };
 
+  const resetGame = () => {
+    setStageBoard(emptyBoard);
+    setSwappedBoard(emptysmallBoard);
+    setTime(0);
+    setVelocity(velocityStart);
+    setLevelVelocity(velocityStart);
+    setGameMode(1);
+  };
+
   const colorTheSpots = (theSprite: Piece, color: Color, fixed: boolean) => {
     const tempBoard = [...stageBoard];
     theSprite.sprite.forEach((spriteSpot) => {
@@ -244,7 +254,7 @@ function App() {
     let pieceFixed = false;
     if (piece.row + piece.height < boardHeight) {
       let allowed = true;
-      piece.sprite.forEach((spot) => {
+      piece?.sprite?.forEach((spot) => {
         const isFixed = stageBoard[spot.row + 1][spot.col]?.fixed;
         if (isFixed) {
           allowed = !isFixed;
@@ -408,12 +418,17 @@ function App() {
   }, [rotateCW, rotateCounterCW]);
 
   return (
-    <div className="flex h-screen dark:bg-slate-900">
-      <div className="relative flex p-4 m-2">
-        <fieldset className="p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400">
+    <div className="flex w-full h-screen dark:bg-slate-900">
+      <div className={`relative flex p-4 m-2 `}>
+        <fieldset
+          className={`${
+            gameMode ? "opacity-100" : "opacity-25"
+          } p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
+        >
           <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
             Next
           </legend>
+
           <div className={`grid gap-0 grid-cols-4 place-content-center`}>
             {nextBoard.map((row, nextIndex) => {
               return (
@@ -429,8 +444,33 @@ function App() {
           </div>
         </fieldset>
 
+        {
+          <div
+            className={`transition-opacity duration-1000 ease-out absolute inset-x-0 z-10 w-72 mx-auto capitalize top-48 ${
+              gameMode ? "opacity-0 cursor-default" : "opacity-100"
+            }`}
+          >
+            <p
+              className={`text-5xl text-red-500 font-extrabold ${
+                time ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              game over
+            </p>
+            <button
+              className={`text-xl font-medium px-4 py-2 mx-auto mt-4 capitalize text-sky-500 border-sky-600 hover:bg-sky-200 hover:text-sky-600 transition ease-in duration-400 border-2 rounded-md ${
+                gameMode ? "cursor-default" : ""
+              }`}
+              onClick={() => !gameMode && resetGame()}
+            >
+              new game
+            </button>
+          </div>
+        }
         <div
-          className={`px-4 mx-auto grid gap-0 grid-cols-${boardWidth.toString()} place-content-center content-start`}
+          className={`transition duration-1000 z-0 ${
+            gameMode ? "opacity-100" : "opacity-25"
+          } px-4 w-96 mx-auto grid gap-0 grid-cols-${boardWidth.toString()} place-content-center content-start`}
         >
           {stageBoard.map((row, index) => {
             return (
@@ -445,7 +485,11 @@ function App() {
           })}
         </div>
 
-        <fieldset className="p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400">
+        <fieldset
+          className={`${
+            gameMode ? "opacity-100" : "opacity-25"
+          } p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
+        >
           <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
             Swap
           </legend>
