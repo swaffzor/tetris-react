@@ -20,6 +20,21 @@ export interface Shape {
   sprite: number[][];
 }
 
+export enum BoardType {
+  Stage,
+  Next,
+  Swap,
+}
+
+export type Board = Spot[][];
+
+export type BoardMap = {
+  [key in BoardType]: {
+    board: Board;
+    set: React.Dispatch<React.SetStateAction<Board>>;
+  };
+};
+
 export interface ShapeMap {
   [key: string]: Partial<Shape>;
 }
@@ -39,7 +54,7 @@ export interface SpriteSpot {
 
 export type Sprite = SpriteSpot[];
 
-export interface SpriteEntry {
+export interface Piece {
   name: string;
   color: Color;
   sprite: Sprite;
@@ -50,7 +65,7 @@ export interface SpriteEntry {
 }
 
 export interface PieceSprite {
-  [key: string]: SpriteEntry;
+  [key: string]: Piece;
 }
 
 export enum Column {
