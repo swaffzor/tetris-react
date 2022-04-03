@@ -147,6 +147,13 @@ function App() {
   }, [keyDownPressed, keySPressed]);
 
   useEffect(() => {
+    if (time > 0) {
+      setGameMode(0);
+      console.log("GAME OVER");
+    }
+  }, [stageBoard[0].some((spot) => spot.fixed)]);
+
+  useEffect(() => {
     (keyUpPressed || keyWPressed) && setDropPiece(true);
   }, [keyUpPressed, keyWPressed]);
 
@@ -303,11 +310,11 @@ function App() {
     }
 
     let timeout = setTimeout(() => {
-      setTime(time + 1);
+      gameMode && setTime(time + 1);
     }, velocity);
 
     return () => clearInterval(timeout);
-  }, [time, velocity]);
+  }, [time, velocity, swappedPiece, gameMode]);
 
   // const timer = async () => {
   //   return new Promise((res =>))
