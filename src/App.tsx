@@ -354,7 +354,6 @@ function App() {
           {board.map((row, index) => {
             return (
               <Row
-                boardWidth={boardWidth}
                 key={index}
                 spots={row}
                 width="w-8"
@@ -373,7 +372,6 @@ function App() {
             {nextBoard.map((row, nextIndex) => {
               return (
                 <Row
-                  boardWidth={4}
                   key={`next-${nextIndex}`}
                   spots={row}
                   width="w-4"
@@ -391,24 +389,35 @@ function App() {
 
 export default App;
 
+const drunk = "transition duration-700";
 interface RowProps {
-  boardWidth: number;
   spots: Spot[];
   width: string;
   height: string;
   border: string;
 }
-export const Row = ({ boardWidth, spots, border, width, height }: RowProps) => {
+export const Row = ({ spots, border, width, height }: RowProps) => {
   return (
     <>
       {spots.length > 0 &&
         spots?.map((spot, index) => {
           return (
-            <div
-              key={`spot-${index}`}
-              className={`${spot.color} ${width} ${height} m-auto border ${border}`}
-            >
-              {/* {spot.value} */}
+            <div key={`spot-${index}`}>
+              <div
+                className={[
+                  `ease-linear ${spot.fixed ? "duration-200" : "duration-75"}`,
+                  spot.color,
+                  width,
+                  height,
+                  spot.fixed
+                    ? "rounded-xs"
+                    : spot.color === "bg-slate-400"
+                    ? "border border-slate-500" //affects grid
+                    : " border", // piece/cursor
+                ].join(" ")}
+              >
+                {/* {spot.value} */}
+              </div>
             </div>
           );
         })}
