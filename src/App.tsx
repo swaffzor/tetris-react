@@ -420,93 +420,21 @@ function App() {
   return (
     <div className="flex w-full h-screen dark:bg-slate-900">
       <div className={`relative flex p-4 m-2 `}>
-        <fieldset
-          className={`${
-            gameMode ? "opacity-100" : "opacity-25"
-          } p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
-        >
-          <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
-            Next
-          </legend>
+        <SideBoard board={nextBoard} gameMode={gameMode} />
 
-          <div className={`grid gap-0 grid-cols-4 place-content-center`}>
-            {nextBoard.map((row, nextIndex) => {
-              return (
-                <Row
-                  key={`next-${nextIndex}`}
-                  spots={row}
-                  width="w-4"
-                  height="h-4"
-                  border="border-white"
-                />
-              );
-            })}
-          </div>
-        </fieldset>
+        <Overlay gameOver={gameMode === 0} onClick={resetGame} />
 
-        {
-          <div
-            className={`transition-opacity duration-1000 ease-out absolute inset-x-0 z-10 w-72 mx-auto capitalize top-48 ${
-              gameMode ? "opacity-0 cursor-default" : "opacity-100"
-            }`}
-          >
-            <p
-              className={`text-5xl text-red-500 font-extrabold ${
-                time ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              game over
-            </p>
-            <button
-              className={`text-xl font-medium px-4 py-2 mx-auto mt-4 capitalize text-sky-500 border-sky-600 hover:bg-sky-200 hover:text-sky-600 transition ease-in duration-400 border-2 rounded-md ${
-                gameMode ? "cursor-default" : ""
-              }`}
-              onClick={() => !gameMode && resetGame()}
-            >
-              new game
-            </button>
-          </div>
-        }
         <div
           className={`transition duration-1000 z-0 ${
             gameMode ? "opacity-100" : "opacity-25"
           } px-4 w-96 mx-auto grid gap-0 grid-cols-${boardWidth.toString()} place-content-center content-start`}
         >
           {stageBoard.map((row, index) => {
-            return (
-              <Row
-                key={index}
-                spots={row}
-                width="w-8"
-                height="h-8"
-                border="border-slate-300"
-              />
-            );
+            return <Row key={index} spots={row} width="w-8" height="h-8" />;
           })}
         </div>
 
-        <fieldset
-          className={`${
-            gameMode ? "opacity-100" : "opacity-25"
-          } p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
-        >
-          <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
-            Swap
-          </legend>
-          <div className={`grid gap-0 grid-cols-4 place-content-center`}>
-            {swappedBoard.map((row, nextIndex) => {
-              return (
-                <Row
-                  key={`next-${nextIndex}`}
-                  spots={row}
-                  width="w-4"
-                  height="h-4"
-                  border="border-white"
-                />
-              );
-            })}
-          </div>
-        </fieldset>
+        <SideBoard board={swappedBoard} gameMode={gameMode} />
       </div>
     </div>
   );
@@ -515,37 +443,3 @@ function App() {
 export default App;
 
 const drunk = "transition duration-700";
-interface RowProps {
-  spots: Spot[];
-  width: string;
-  height: string;
-  border: string;
-}
-export const Row = ({ spots, border, width, height }: RowProps) => {
-  return (
-    <>
-      {spots.length > 0 &&
-        spots?.map((spot, index) => {
-          return (
-            <div key={`spot-${index}`}>
-              <div
-                className={[
-                  `ease-linear ${spot.fixed ? "duration-200" : "duration-75"}`,
-                  spot.color,
-                  width,
-                  height,
-                  spot.fixed
-                    ? "rounded-xs border"
-                    : spot.color === "bg-slate-400"
-                    ? "border border-slate-500" //affects grid
-                    : "border", // piece/cursor
-                ].join(" ")}
-              >
-                {/* {spot.value} */}
-              </div>
-            </div>
-          );
-        })}
-    </>
-  );
-};
