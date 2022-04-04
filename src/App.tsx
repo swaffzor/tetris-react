@@ -9,11 +9,14 @@ import {
   Column,
   PieceSprite,
   Spot,
-  Sprite,
   Piece,
+  Board,
 } from "./types";
 import * as sprites from "./sprites.json";
-import "./App.css";
+import SideBoard from "./SideBoard";
+import Overlay from "./Overlay";
+import Row from "./Row";
+import { rotate } from "./utils";
 
 function App() {
   const boardWidth = 12;
@@ -31,7 +34,7 @@ function App() {
     color: "bg-slate-400",
     fixed: false,
   });
-  const emptyBoard: Spot[][] = [];
+  const emptyBoard: Board = [];
   // init an empty board
   for (let y = 0; y < boardHeight; y++) {
     const tempRow: Spot[] = [];
@@ -47,7 +50,7 @@ function App() {
     emptyBoard.push(tempRow);
   }
 
-  const emptysmallBoard: Spot[][] = [];
+  const emptysmallBoard: Board = [];
   for (let y = 0; y < 4; y++) {
     const tempRow: Spot[] = [];
     for (let x = 0; x < 4; x++) {
@@ -64,9 +67,9 @@ function App() {
 
   const pieceSprites: PieceSprite = sprites as PieceSprite;
 
-  const [stageBoard, setStageBoard] = useState<Spot[][]>(emptyBoard);
-  const [nextBoard, setNextBoard] = useState<Spot[][]>(emptysmallBoard);
-  const [swappedBoard, setSwappedBoard] = useState<Spot[][]>(emptysmallBoard);
+  const [stageBoard, setStageBoard] = useState<Board>(emptyBoard);
+  const [nextBoard, setNextBoard] = useState<Board>(emptysmallBoard);
+  const [swappedBoard, setSwappedBoard] = useState<Board>(emptysmallBoard);
 
   const [piece, setPiece] = useState<Piece>(pieceSprites.j);
   const [nextPiece, setNextPiece] = useState<Piece>(pieceSprites.t);
@@ -119,6 +122,25 @@ function App() {
   };
 
   useEffect(() => {
+    resetGame();
+  }, []);
+
+  useEffect(() => {
+    setFastGravity(keyDownPressed || keySPressed);
+  }, [keyDownPressed, keySPressed]);
+
+  useEffect(() => {
+    (keyUpPressed || keyWPressed) && setDropPiece(true);
+  }, [keyUpPressed, keyWPressed]);
+
+  useEffect(() => {
+    if (time > 0) {
+      setGameMode(0);
+      console.log("GAME OVER");
+    }
+  }, [stageBoard[0].some((spot) => spot.fixed)]);
+
+  useEffect(() => {
     if (swappPressed) {
       swappPressed = false;
       console.log("SWAP");
@@ -142,21 +164,6 @@ function App() {
       setPiece(newPiece);
     }
   }, [swappPressed]);
-
-  useEffect(() => {
-    setFastGravity(keyDownPressed || keySPressed);
-  }, [keyDownPressed, keySPressed]);
-
-  useEffect(() => {
-    if (time > 0) {
-      setGameMode(0);
-      console.log("GAME OVER");
-    }
-  }, [stageBoard[0].some((spot) => spot.fixed)]);
-
-  useEffect(() => {
-    (keyUpPressed || keyWPressed) && setDropPiece(true);
-  }, [keyUpPressed, keyWPressed]);
 
   const replaceSpotInBoard = (row: number, column: Column, newSpot: Spot) => {
     const tempBoard = [...stageBoard];
@@ -225,7 +232,7 @@ function App() {
     });
   };
 
-  const clearLines = (tempBoard: Spot[][]) => {
+  const clearLines = (tempBoard: Board) => {
     const cleared =
       tempBoard.filter((row) =>
         row.filter((spot) => spot.fixed).length === boardWidth ? false : true
@@ -366,46 +373,8 @@ function App() {
     if (!rotateCW && !rotateCounterCW) {
       return;
     }
-    let count = 1;
-    let max = Math.max(piece.height, piece.width) + 1;
 
-    let tempMatrix: number[][] = [];
-    for (let y = 0; y < max; y++) {
-      tempMatrix.push([]);
-      for (let x = 0; x < max; x++) {
-        tempMatrix[y].push(0);
-      }
-    }
-    piece.sprite.forEach((s) => {
-      tempMatrix[s.row - piece.row + 1][s.col - piece.column + 1] = count++;
-    });
-
-    let rotated: number[][] = [...tempMatrix];
-    for (let i = 0; i < (rotateCounterCW ? 3 : 1); i++) {
-      rotated = rotated[0].map((val, index) =>
-        rotated.map((row) => row[index]).reverse()
-      );
-    }
-
-    const converted: Sprite = [];
-    rotated.forEach((row, y) => {
-      row.forEach((spot, x) => {
-        const index = spot > 0 ? spot - 1 : -1;
-        index >= 0 &&
-          converted?.splice(index, 0, {
-            row: y + piece.row - 1,
-            col: x + piece.column - 1,
-          });
-      });
-    });
-    const cornerPosition = converted.reduce(
-      (lowest, current) => {
-        const col = lowest.col < current.col ? lowest.col : current.col;
-        const row = lowest.row < current.row ? lowest.row : current.row;
-        return { col, row };
-      },
-      { col: converted[0].col, row: converted[0].row }
-    );
+    const [converted, cornerPosition] = rotate(piece, rotateCW ? "cw" : "ccw");
 
     setThePiece({
       ...piece,
