@@ -78,6 +78,10 @@ function App() {
   const [nextQueue, setNextQueue] = useState<Piece[]>([
     pieceSprites.t,
     pieceSprites.j,
+    pieceSprites.z,
+    pieceSprites.o,
+    pieceSprites.i,
+    pieceSprites.l,
   ]);
 
   const [velocity, setVelocity] = useState(velocityStart);
@@ -120,50 +124,6 @@ function App() {
       bgColor: "bg-slate-200",
     },
   };
-
-  useEffect(() => {
-    resetGame();
-  }, []);
-
-  useEffect(() => {
-    setFastGravity(keyDownPressed || keySPressed);
-  }, [keyDownPressed, keySPressed]);
-
-  useEffect(() => {
-    (keyUpPressed || keyWPressed) && setDropPiece(true);
-  }, [keyUpPressed, keyWPressed]);
-
-  useEffect(() => {
-    if (time > 0) {
-      setGameMode(0);
-      console.log("GAME OVER");
-    }
-  }, [stageBoard[0].some((spot) => spot.fixed)]);
-
-  useEffect(() => {
-    if (swappPressed) {
-      swappPressed = false;
-      console.log("SWAP");
-      let newPiece = swappedPiece;
-      if (!newPiece) {
-        newPiece = nextPiece;
-        const piece = pieceOptions.charAt(Math.floor(Math.random() * 6));
-        colorPieceOnBoard(pieceSprites[piece], BoardType.Next);
-        setNextPiece(pieceSprites[piece]);
-      }
-
-      newPiece.column = pieceSprites[newPiece.name].column;
-      newPiece.row = pieceSprites[newPiece.name].row;
-      newPiece.sprite = pieceSprites[newPiece.name].sprite;
-
-      // clear board of previous piece
-      colorPieceOnBoard({ ...piece, color: "bg-slate-400" }, BoardType.Stage);
-
-      colorPieceOnBoard(pieceSprites[piece.name], BoardType.Swap);
-      setSwappedPiece(piece);
-      setPiece(newPiece);
-    }
-  }, [swappPressed]);
 
   const replaceSpotInBoard = (row: number, column: Column, newSpot: Spot) => {
     const tempBoard = [...stageBoard];
@@ -249,6 +209,18 @@ function App() {
   };
 
   useEffect(() => {
+    resetGame();
+  }, []);
+
+  useEffect(() => {
+    setFastGravity(keyDownPressed || keySPressed);
+  }, [keyDownPressed, keySPressed]);
+
+  useEffect(() => {
+    (keyUpPressed || keyWPressed) && setDropPiece(true);
+  }, [keyUpPressed, keyWPressed]);
+
+  useEffect(() => {
     time > 0 && setVelocity(dropPiece ? velocity / 10000 : levelVelocity);
   }, [dropPiece]);
 
@@ -257,7 +229,40 @@ function App() {
   }, [fastGravity]);
 
   useEffect(() => {
-    // move piece down G R A V I T Y
+    if (time > 0) {
+      setGameMode(0);
+      console.log("GAME OVER");
+    }
+  }, [stageBoard[0].some((spot) => spot.fixed)]);
+
+  // swap
+  useEffect(() => {
+    if (swappPressed) {
+      swappPressed = false;
+      console.log("SWAP");
+      let newPiece = swappedPiece;
+      if (!newPiece) {
+        newPiece = nextPiece;
+        const piece = pieceOptions.charAt(Math.floor(Math.random() * 6));
+        colorPieceOnBoard(pieceSprites[piece], BoardType.Next);
+        setNextPiece(pieceSprites[piece]);
+      }
+
+      newPiece.column = pieceSprites[newPiece.name].column;
+      newPiece.row = pieceSprites[newPiece.name].row;
+      newPiece.sprite = pieceSprites[newPiece.name].sprite;
+
+      // clear board of previous piece
+      colorPieceOnBoard({ ...piece, color: "bg-slate-400" }, BoardType.Stage);
+
+      colorPieceOnBoard(pieceSprites[piece.name], BoardType.Swap);
+      setSwappedPiece(piece);
+      setPiece(newPiece);
+    }
+  }, [swappPressed]);
+
+  // move piece down G R A V I T Y
+  useEffect(() => {
     let pieceFixed = false;
     if (piece.row + piece.height < boardHeight) {
       let allowed = true;
@@ -320,10 +325,12 @@ function App() {
       }
       const tempQ = [...nextQueue];
       tempQ.push(next);
+
+      const newPiece = tempQ.shift() ?? next;
+      setThePiece(newPiece);
       setNextQueue(tempQ);
-      setThePiece(nextPiece);
-      setNextPiece(next);
-      colorPieceOnBoard(next, BoardType.Next);
+      // setNextPiece(next);
+      colorPieceOnBoard(newPiece, BoardType.Next);
     }
 
     let timeout = setTimeout(() => {
@@ -333,12 +340,8 @@ function App() {
     return () => clearInterval(timeout);
   }, [time, velocity, swappedPiece, gameMode]);
 
-  // const timer = async () => {
-  //   return new Promise((res =>))
-  // }
-
+  // move left or right
   useEffect(() => {
-    // move left or right
     const magnitude = leftPressed ? piece.column : piece.column + piece.width;
     const direction =
       leftPressed && magnitude > 0
@@ -367,8 +370,8 @@ function App() {
       });
   }, [leftPressed, rightPressed]);
 
+  // rotation
   useEffect(() => {
-    // rotation
     // debounce protection
     if (!rotateCW && !rotateCounterCW) {
       return;
@@ -394,9 +397,14 @@ function App() {
         <Overlay gameOver={gameMode === 0} onClick={resetGame} />
 
         <div
-          className={`transition duration-1000 z-0 ${
-            gameMode ? "opacity-100" : "opacity-25"
-          } px-4 w-96 mx-auto grid gap-0 grid-cols-${boardWidth.toString()} place-content-center content-start`}
+          className={[
+            `place-content-center content-start`,
+            `px-4 w-96 mx-auto grid gap-0 grid-cols-${boardWidth.toString()}`,
+            `${gameMode ? "opacity-100" : "opacity-25"}`,
+            `transition duration-1000 z-0`,
+          ]
+            .join(" ")
+            .trim()}
         >
           {stageBoard.map((row, index) => {
             return <Row key={index} spots={row} width="w-8" height="h-8" />;
