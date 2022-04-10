@@ -6,7 +6,6 @@ import {
   BoardMap,
   BoardType,
   Color,
-  Column,
   PieceSprite,
   Spot,
   Piece,
@@ -50,12 +49,28 @@ function App() {
     emptyBoard.push(tempRow);
   }
 
+  const emptyNextQueue: Board = [];
+  // init an empty board
+  for (let y = 0; y < 4 * pieceOptions.length; y++) {
+    const tempRow: Spot[] = [];
+    for (let x = 0; x < 4; x++) {
+      tempRow.push({
+        ...empty,
+        color: "bg-slate-200",
+        col: x,
+        row: y,
+        value: `r${y} c${x}`,
+      });
+    }
+    emptyNextQueue.push(tempRow);
+  }
+
   const emptysmallBoard: Board = [];
   for (let y = 0; y < 4; y++) {
     const tempRow: Spot[] = [];
     for (let x = 0; x < 4; x++) {
       tempRow.push({
-        ...empty,
+        fixed: true,
         color: "bg-slate-200",
         col: x,
         row: y,
@@ -67,22 +82,38 @@ function App() {
 
   const pieceSprites: PieceSprite = sprites as PieceSprite;
 
-  const [stageBoard, setStageBoard] = useState<Board>(emptyBoard);
-  const [nextBoard, setNextBoard] = useState<Board>(emptysmallBoard);
-  const [swappedBoard, setSwappedBoard] = useState<Board>(emptysmallBoard);
-
-  const [piece, setPiece] = useState<Piece>(pieceSprites.j);
-  const [nextPiece, setNextPiece] = useState<Piece>(pieceSprites.t);
-  const [swappedPiece, setSwappedPiece] = useState<Piece>();
-
-  const [nextQueue, setNextQueue] = useState<Piece[]>([
+  const [nextPieceQueue, setNextPieceQueue] = useState<Piece[]>([
     pieceSprites.t,
     pieceSprites.j,
     pieceSprites.z,
     pieceSprites.o,
     pieceSprites.i,
     pieceSprites.l,
+    pieceSprites.z,
   ]);
+
+  const nextQ = Array.from(emptyNextQueue);
+  let piecePosition = 0;
+  nextPieceQueue.forEach((tempPiece) => {
+    tempPiece.sprite.forEach((spriteSpot) => {
+      nextQ[spriteSpot.row + piecePosition * 4].splice(spriteSpot.col, 1, {
+        col: spriteSpot.col,
+        row: spriteSpot.row,
+        color: tempPiece.color,
+        fixed: true,
+        value: `r${spriteSpot.row} c${spriteSpot.col}`,
+      });
+    });
+    piecePosition++;
+  });
+
+  const [stageBoard, setStageBoard] = useState<Board>(emptyBoard);
+  const [nextBoard, setNextBoard] = useState<Board>(nextQ);
+  const [swappedBoard, setSwappedBoard] = useState<Board>(emptysmallBoard);
+
+  const [piece, setPiece] = useState<Piece>(pieceSprites.j);
+  const [nextPiece, setNextPiece] = useState<Piece>(pieceSprites.t);
+  const [swappedPiece, setSwappedPiece] = useState<Piece>();
 
   const [velocity, setVelocity] = useState(velocityStart);
   const [levelVelocity, setLevelVelocity] = useState(velocityStart);
@@ -125,12 +156,6 @@ function App() {
     },
   };
 
-  const replaceSpotInBoard = (row: number, column: Column, newSpot: Spot) => {
-    const tempBoard = [...stageBoard];
-    tempBoard[row].splice(column, 1, newSpot);
-    setStageBoard(tempBoard);
-  };
-
   const resetGame = () => {
     setStageBoard(emptyBoard);
     setSwappedBoard(emptysmallBoard);
@@ -168,10 +193,9 @@ function App() {
     );
 
     thePiece.sprite.forEach((spriteSpot) => {
-      const tcol = spriteSpot.col - 3;
-      tempBoard[spriteSpot.row].splice(tcol, 1, {
+      tempBoard[spriteSpot.row].splice(spriteSpot.col, 1, {
         row: 0,
-        col: tcol,
+        col: spriteSpot.col,
         color: thePiece.color,
         fixed: false,
         value: `r${spriteSpot.row} c${spriteSpot.col}`,
@@ -180,7 +204,7 @@ function App() {
     boards[boardType].set(tempBoard);
   };
 
-  const setThePiece = (newSprite: Piece, fixed?: boolean) => {
+  const setPieceOnStage = (newSprite: Piece, fixed?: boolean) => {
     setPiece((oldSprite) => {
       colorTheSpots(oldSprite, "bg-slate-400", false);
       colorTheSpots(
@@ -197,8 +221,8 @@ function App() {
       tempBoard.filter((row) =>
         row.filter((spot) => spot.fixed).length === boardWidth ? false : true
       ) ?? [];
-    if (cleared.length < boardHeight) {
-      for (let i = 0; i < boardHeight - cleared.length; i++) {
+    if (cleared.length < tempBoard.length) {
+      for (let i = 0; i <= tempBoard.length - cleared.length; i++) {
         cleared.unshift([...emptyRow]);
         console.log("line cleared");
       }
@@ -244,6 +268,9 @@ function App() {
       if (!newPiece) {
         newPiece = nextPiece;
         const piece = pieceOptions.charAt(Math.floor(Math.random() * 6));
+        nextPieceQueue.shift();
+        nextPieceQueue.push(pieceSprites[piece]);
+        setNextPieceQueue(nextPieceQueue);
         colorPieceOnBoard(pieceSprites[piece], BoardType.Next);
         setNextPiece(pieceSprites[piece]);
       }
@@ -274,7 +301,7 @@ function App() {
       });
 
       if (allowed) {
-        setThePiece({
+        setPieceOnStage({
           ...piece,
           row: piece.row + 1,
           sprite: piece.sprite.map((spot) => {
@@ -285,12 +312,12 @@ function App() {
           }),
         });
       } else {
-        setThePiece(piece, true);
         pieceFixed = true;
+        setPieceOnStage(piece, pieceFixed);
       }
     } else {
-      setThePiece(piece, true);
       pieceFixed = true;
+      setPieceOnStage(piece, pieceFixed);
     }
 
     if (pieceFixed) {
@@ -323,14 +350,31 @@ function App() {
           next = pieceSprites["i"];
           break;
       }
-      const tempQ = [...nextQueue];
-      tempQ.push(next);
 
+      const tempQ = [...nextPieceQueue];
       const newPiece = tempQ.shift() ?? next;
-      setThePiece(newPiece);
-      setNextQueue(tempQ);
-      // setNextPiece(next);
-      colorPieceOnBoard(newPiece, BoardType.Next);
+      setPieceOnStage(newPiece);
+      setNextPiece(tempQ[0]);
+      tempQ.push(next);
+      setNextPieceQueue(tempQ);
+
+      const tempNextBoard = [...nextBoard];
+      for (let i = 0; i < 4; i++) {
+        tempNextBoard.shift();
+      }
+
+      const mysmallboard = Array.from(emptysmallBoard);
+      next.sprite.forEach((spriteSpot) => {
+        mysmallboard[spriteSpot.row].splice(spriteSpot.col, 1, {
+          color: next.color,
+          col: spriteSpot.col,
+          row: spriteSpot.row,
+          fixed: false,
+          value: "idc",
+        });
+      });
+      tempNextBoard.push(...mysmallboard);
+      setNextBoard(tempNextBoard);
     }
 
     let timeout = setTimeout(() => {
@@ -358,7 +402,7 @@ function App() {
     });
 
     allowed &&
-      setThePiece({
+      setPieceOnStage({
         ...piece,
         column: piece.column + direction,
         sprite: piece.sprite.map((spot) => {
@@ -379,7 +423,7 @@ function App() {
 
     const [converted, cornerPosition] = rotate(piece, rotateCW ? "cw" : "ccw");
 
-    setThePiece({
+    setPieceOnStage({
       ...piece,
       sprite: converted,
       height: piece.width,
@@ -392,7 +436,7 @@ function App() {
   return (
     <div className="flex w-full h-screen dark:bg-slate-900">
       <div className={`relative flex p-4 m-2 `}>
-        <SideBoard board={nextBoard} gameMode={gameMode} />
+        <SideBoard board={nextBoard} gameMode={gameMode} title="Next" />
 
         <Overlay gameOver={gameMode === 0} onClick={resetGame} />
 
@@ -411,7 +455,7 @@ function App() {
           })}
         </div>
 
-        <SideBoard board={swappedBoard} gameMode={gameMode} />
+        <SideBoard board={swappedBoard} gameMode={gameMode} title="Swap" />
       </div>
     </div>
   );

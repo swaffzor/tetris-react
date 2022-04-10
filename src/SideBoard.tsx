@@ -5,9 +5,10 @@ import { Board } from "./types";
 interface Props {
   board: Board;
   gameMode: number;
+  title: string;
 }
 
-const SideBoard = ({ gameMode, board }: Props) => {
+const SideBoard = ({ gameMode, board, title }: Props) => {
   return (
     <fieldset
       className={`${
@@ -15,7 +16,7 @@ const SideBoard = ({ gameMode, board }: Props) => {
       } p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
     >
       <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
-        Next
+        {title}
       </legend>
 
       <div className={`grid gap-0 grid-cols-4 place-content-center`}>

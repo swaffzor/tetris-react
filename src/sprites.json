@@ -5,25 +5,25 @@
     "sprite": [
       {
         "row": 0,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 4
+        "col": 1
       },
       {
         "row": 2,
-        "col": 4
+        "col": 1
       },
       {
         "row": 3,
-        "col": 4
+        "col": 1
       }
     ],
     "height": 4,
     "width": 1,
     "row": 0,
-    "column": 4
+    "column": 1
   },
   "j": {
     "name": "j",
@@ -31,25 +31,25 @@
     "sprite": [
       {
         "row": 0,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 6
+        "col": 3
       }
     ],
     "height": 2,
     "width": 3,
     "row": 0,
-    "column": 4
+    "column": 1
   },
   "l": {
     "name": "l",
@@ -57,25 +57,25 @@
     "sprite": [
       {
         "row": 0,
-        "col": 6
+        "col": 3
       },
       {
         "row": 1,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 6
+        "col": 3
       }
     ],
     "height": 2,
     "width": 3,
     "row": 0,
-    "column": 4
+    "column": 1
   },
   "o": {
     "name": "o",
@@ -83,25 +83,25 @@
     "sprite": [
       {
         "row": 0,
-        "col": 4
+        "col": 1
       },
       {
         "row": 0,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 5
+        "col": 2
       }
     ],
     "height": 2,
     "width": 2,
     "row": 0,
-    "column": 4
+    "column": 1
   },
   "s": {
     "name": "s",
@@ -109,25 +109,25 @@
     "sprite": [
       {
         "row": 0,
-        "col": 5
+        "col": 2
       },
       {
         "row": 0,
-        "col": 6
+        "col": 3
       },
       {
         "row": 1,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 5
+        "col": 2
       }
     ],
     "height": 2,
     "width": 3,
     "row": 0,
-    "column": 4
+    "column": 1
   },
   "t": {
     "name": "t",
@@ -135,25 +135,25 @@
     "sprite": [
       {
         "row": 0,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 4
+        "col": 1
       },
       {
         "row": 1,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 6
+        "col": 3
       }
     ],
     "height": 2,
     "width": 3,
     "row": 0,
-    "column": 4
+    "column": 1
   },
   "z": {
     "name": "z",
@@ -161,24 +161,24 @@
     "sprite": [
       {
         "row": 0,
-        "col": 4
+        "col": 1
       },
       {
         "row": 0,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 5
+        "col": 2
       },
       {
         "row": 1,
-        "col": 6
+        "col": 3
       }
     ],
     "height": 2,
     "width": 3,
     "row": 0,
-    "column": 4
+    "column": 1
   }
 }

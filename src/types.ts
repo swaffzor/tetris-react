@@ -11,7 +11,6 @@ export type Color =
   | "bg-purple-400";
 
 export interface Shape {
-  column: Column;
   row: number;
   width: number;
   height: number;
