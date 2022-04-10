@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/tetris-react/static/css/main.6a1efa21.css",
-    "main.js": "/tetris-react/static/js/main.4bf166f3.js",
-    "static/js/787.031b57d2.chunk.js": "/tetris-react/static/js/787.031b57d2.chunk.js",
+    "main.css": "/tetris-react/static/css/main.7628bd9d.css",
+    "main.js": "/tetris-react/static/js/main.cafff8aa.js",
+    "static/js/787.e8180c3c.chunk.js": "/tetris-react/static/js/787.e8180c3c.chunk.js",
     "index.html": "/tetris-react/index.html",
-    "main.6a1efa21.css.map": "/tetris-react/static/css/main.6a1efa21.css.map",
-    "main.4bf166f3.js.map": "/tetris-react/static/js/main.4bf166f3.js.map",
-    "787.031b57d2.chunk.js.map": "/tetris-react/static/js/787.031b57d2.chunk.js.map"
+    "main.7628bd9d.css.map": "/tetris-react/static/css/main.7628bd9d.css.map",
+    "main.cafff8aa.js.map": "/tetris-react/static/js/main.cafff8aa.js.map",
+    "787.e8180c3c.chunk.js.map": "/tetris-react/static/js/787.e8180c3c.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.6a1efa21.css",
-    "static/js/main.4bf166f3.js"
+    "static/css/main.7628bd9d.css",
+    "static/js/main.cafff8aa.js"
   ]
 }
