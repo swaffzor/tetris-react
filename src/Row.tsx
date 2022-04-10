@@ -5,14 +5,15 @@ interface RowProps {
   spots: Spot[];
   width: string;
   height: string;
+  hide?: boolean;
 }
-const Row = ({ spots, width, height }: RowProps) => {
+const Row = ({ spots, width, height, hide }: RowProps) => {
   return (
     <>
       {spots.length > 0 &&
         spots?.map((spot, index) => {
           return (
-            <div key={`spot-${index}`}>
+            <div key={`spot-${index}`} className={hide ? "hidden" : ""}>
               <div
                 className={[
                   `ease-linear ${spot.fixed ? "duration-200" : "duration-75"}`,

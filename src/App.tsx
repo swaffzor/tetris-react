@@ -20,7 +20,7 @@ import { rotate } from "./utils";
 
 function App() {
   const boardWidth = 12;
-  const boardHeight = 20;
+  const boardHeight = 21;
   const pieceOptions = "ijlostz";
   const velocityStart = 700;
   const empty: Spot = {
@@ -54,7 +54,7 @@ function App() {
   // init an empty board
   for (let y = 0; y < 4 * pieceOptions.length; y++) {
     const tempRow: Spot[] = [];
-    for (let x = 0; x < 4; x++) {
+    for (let x = 0; x < 5; x++) {
       tempRow.push({
         ...empty,
         color: "bg-slate-200",
@@ -69,7 +69,7 @@ function App() {
   const emptysmallBoard: Board = [];
   for (let y = 0; y < 4; y++) {
     const tempRow: Spot[] = [];
-    for (let x = 0; x < 4; x++) {
+    for (let x = 0; x < 5; x++) {
       tempRow.push({
         fixed: true,
         color: "bg-slate-200",
@@ -315,7 +315,7 @@ function App() {
   // move piece down G R A V I T Y
   useEffect(() => {
     let pieceFixed = false;
-    if (piece.row + piece.height < boardHeight) {
+    if (piece.row + piece.height <= boardHeight - 1) {
       let allowed = true;
       piece?.sprite?.forEach((spot) => {
         const isFixed = stageBoard[spot.row + 1][spot.col]?.fixed;
@@ -444,7 +444,6 @@ function App() {
     if (!rotateCW && !rotateCounterCW) {
       return;
     }
-
     const [converted, cornerPosition] = rotate(piece, rotateCW ? "cw" : "ccw");
 
     setPieceOnStage({
@@ -460,7 +459,12 @@ function App() {
   return (
     <div className="flex w-full h-screen dark:bg-slate-900">
       <div className={`relative flex p-4 m-2 `}>
-        <SideBoard board={nextBoard} gameMode={gameMode} title="Next" />
+        <SideBoard
+          board={nextBoard}
+          gameMode={gameMode}
+          columns={nextBoard[0].length}
+          title="Next"
+        />
 
         <div
           className={`transition-opacity duration-1000 ease-out justify-items-start ${
@@ -488,7 +492,7 @@ function App() {
                 "sky",
                 gameMode === Game.Over ? "fuchsia" : "emerald"
               )}`}
-              onClick={resetGame}
+              onClick={() => (gameMode !== Game.Play ? resetGame() : {})}
             >
               new game
             </button>
@@ -506,11 +510,24 @@ function App() {
             .trim()}
         >
           {stageBoard.map((row, index) => {
-            return <Row key={index} spots={row} width="w-8" height="h-8" />;
+            return (
+              <Row
+                key={index}
+                spots={row}
+                width="w-8"
+                height="h-8"
+                hide={index === 0}
+              />
+            );
           })}
         </div>
 
-        <SideBoard board={swappedBoard} gameMode={gameMode} title="Swap" />
+        <SideBoard
+          board={swappedBoard}
+          columns={swappedBoard[0].length}
+          gameMode={gameMode}
+          title="Swap"
+        />
       </div>
     </div>
   );

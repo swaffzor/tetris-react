@@ -4,11 +4,12 @@ import { Board } from "./types";
 
 interface Props {
   board: Board;
+  columns: number;
   gameMode: number;
   title: string;
 }
 
-const SideBoard = ({ gameMode, board, title }: Props) => {
+const SideBoard = ({ gameMode, columns, board, title }: Props) => {
   return (
     <fieldset
       className={`${
@@ -19,7 +20,7 @@ const SideBoard = ({ gameMode, board, title }: Props) => {
         {title}
       </legend>
 
-      <div className={`grid gap-0 grid-cols-4 place-content-center`}>
+      <div className={`grid gap-0 grid-cols-${columns} place-content-center`}>
         {board.map((row, nextIndex) => {
           return (
             <Row
