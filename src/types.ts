@@ -87,3 +87,9 @@ export enum Orientation {
   Left,
   Right,
 }
+
+export enum GameMode {
+  "Over",
+  "Play",
+  "Pause",
+}

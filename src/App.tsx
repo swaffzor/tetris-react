@@ -10,6 +10,7 @@ import {
   Spot,
   Piece,
   Board,
+  GameMode as Game,
 } from "./types";
 import * as sprites from "./sprites.json";
 import SideBoard from "./SideBoard";
@@ -118,9 +119,11 @@ function App() {
   const [velocity, setVelocity] = useState(velocityStart);
   const [levelVelocity, setLevelVelocity] = useState(velocityStart);
   const [time, setTime] = useState(0);
-  const [gameMode, setGameMode] = useState(1);
+
+  const [gameMode, setGameMode] = useState<Game>(Game.Play);
   const [dropPiece, setDropPiece] = useState(false);
   const [fastGravity, setFastGravity] = useState(false);
+  const [overlayText, setOverlayText] = useState("paused");
 
   const keyLeftPressed = useKeyPress("ArrowLeft");
   const keyRightPressed = useKeyPress("ArrowRight");
@@ -132,11 +135,18 @@ function App() {
   const keySPressed = useKeyPress("s");
   const keyDPressed = useKeyPress("d");
   const keyShiftPressed = useKeyPress("Shift");
-  const rotateCW = useKeyPress(" ");
-  const rotateCounterCW = rotateCW && keyShiftPressed;
-  const leftPressed = keyLeftPressed || keyAPressed;
-  const rightPressed = keyRightPressed || keyDPressed;
-  let swappPressed = keyEnterPressed;
+  const keyEscapePressed = useKeyPress("Escape");
+  const keySpacePressed = useKeyPress(" ");
+  const controlsEnabled = gameMode === Game.Play;
+  const rotateCW = controlsEnabled && keySpacePressed;
+  const rotateCounterCW = controlsEnabled && rotateCW && keyShiftPressed;
+  const leftPressed = controlsEnabled && (keyLeftPressed || keyAPressed);
+  const rightPressed = controlsEnabled && (keyRightPressed || keyDPressed);
+  let swappPressed = controlsEnabled && keyEnterPressed;
+
+  const buttonClasses = `block text-xl font-medium px-4 py-2 mt-4 capitalize text-sky-500 border-sky-600 hover:bg-sky-200 active:bg-sky-300 hover:text-sky-600 transition ease-in duration-400 border-2 rounded-md ${
+    !gameMode ? "cursor-default" : ""
+  }`;
 
   const boards: BoardMap = {
     [BoardType.Stage]: {
@@ -162,7 +172,7 @@ function App() {
     setTime(0);
     setVelocity(velocityStart);
     setLevelVelocity(velocityStart);
-    setGameMode(1);
+    setGameMode(Game.Play);
   };
 
   const colorTheSpots = (theSprite: Piece, color: Color, fixed: boolean) => {
@@ -237,27 +247,41 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setFastGravity(keyDownPressed || keySPressed);
+    if (gameMode === Game.Play && keyEscapePressed) {
+      setGameMode(Game.Pause);
+      setOverlayText("paused");
+    }
+  }, [keyEscapePressed]);
+
+  useEffect(() => {
+    gameMode === Game.Play && setFastGravity(keyDownPressed || keySPressed);
   }, [keyDownPressed, keySPressed]);
 
   useEffect(() => {
-    (keyUpPressed || keyWPressed) && setDropPiece(true);
+    gameMode === Game.Play &&
+      (keyUpPressed || keyWPressed) &&
+      setDropPiece(true);
   }, [keyUpPressed, keyWPressed]);
 
   useEffect(() => {
-    time > 0 && setVelocity(dropPiece ? velocity / 10000 : levelVelocity);
+    gameMode === Game.Play &&
+      time > 0 &&
+      setVelocity(dropPiece ? velocity / 10000 : levelVelocity);
   }, [dropPiece]);
 
   useEffect(() => {
-    time > 0 && setVelocity(fastGravity ? velocity / 10 : levelVelocity);
+    gameMode === Game.Play &&
+      time > 0 &&
+      setVelocity(fastGravity ? velocity / 10 : levelVelocity);
   }, [fastGravity]);
 
   useEffect(() => {
     if (time > 0) {
-      setGameMode(0);
+      setOverlayText("game over");
+      setGameMode(Game.Over);
       console.log("GAME OVER");
     }
-  }, [stageBoard[0].some((spot) => spot.fixed)]);
+  }, [stageBoard[0].some((spot) => spot.fixed)]); // when any spot in top row is fixed
 
   // swap
   useEffect(() => {
@@ -378,7 +402,7 @@ function App() {
     }
 
     let timeout = setTimeout(() => {
-      gameMode && setTime(time + 1);
+      gameMode === Game.Play && setTime(time + 1);
     }, velocity);
 
     return () => clearInterval(timeout);
@@ -438,13 +462,44 @@ function App() {
       <div className={`relative flex p-4 m-2 `}>
         <SideBoard board={nextBoard} gameMode={gameMode} title="Next" />
 
-        <Overlay gameOver={gameMode === 0} onClick={resetGame} />
+        <div
+          className={`transition-opacity duration-1000 ease-out justify-items-start ${
+            gameMode === Game.Play ? "opacity-0 cursor-default" : "opacity-100"
+          }`}
+        >
+          <Overlay gameMode={gameMode} heading={overlayText}>
+            {gameMode === Game.Pause ? (
+              <button
+                key={`button-resume`}
+                className={`mr-4 ${buttonClasses}`}
+                onClick={() => {
+                  setTimeout(() => setOverlayText("paused"), 1100);
+                  setGameMode(Game.Play);
+                }}
+              >
+                resume
+              </button>
+            ) : (
+              <></>
+            )}
+            <button
+              key={`button-reset`}
+              className={`${buttonClasses.replaceAll(
+                "sky",
+                gameMode === Game.Over ? "fuchsia" : "emerald"
+              )}`}
+              onClick={resetGame}
+            >
+              new game
+            </button>
+          </Overlay>
+        </div>
 
         <div
           className={[
             `place-content-center content-start`,
             `px-4 w-96 mx-auto grid gap-0 grid-cols-${boardWidth.toString()}`,
-            `${gameMode ? "opacity-100" : "opacity-25"}`,
+            `${gameMode === Game.Play ? "opacity-100" : "opacity-25"}`,
             `transition duration-1000 z-0`,
           ]
             .join(" ")
