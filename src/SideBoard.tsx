@@ -7,9 +7,10 @@ interface Props {
   columns: number;
   gameMode: number;
   title: string;
+  width?: string;
 }
 
-const SideBoard = ({ gameMode, columns, board, title }: Props) => {
+const SideBoard = ({ gameMode, columns, board, title, width }: Props) => {
   return (
     <fieldset
       className={`${
@@ -20,7 +21,9 @@ const SideBoard = ({ gameMode, columns, board, title }: Props) => {
         {title}
       </legend>
 
-      <div className={`grid gap-0 grid-cols-${columns} place-content-center`}>
+      <div
+        className={`grid gap-0 grow-0 grid-cols-${columns} ${width} place-content-center`}
+      >
         {board.map((row, nextIndex) => {
           return (
             <Row

@@ -123,7 +123,9 @@ function App() {
   const [gameMode, setGameMode] = useState<Game>(Game.Play);
   const [dropPiece, setDropPiece] = useState(false);
   const [fastGravity, setFastGravity] = useState(false);
+
   const [overlayText, setOverlayText] = useState("paused");
+  const [rowsClearedCount, setRowsClearedCount] = useState(0);
 
   const keyLeftPressed = useKeyPress("ArrowLeft");
   const keyRightPressed = useKeyPress("ArrowRight");
@@ -172,6 +174,7 @@ function App() {
     setTime(0);
     setVelocity(velocityStart);
     setLevelVelocity(velocityStart);
+    setRowsClearedCount(0);
     setGameMode(Game.Play);
   };
 
@@ -234,6 +237,7 @@ function App() {
     if (cleared.length < tempBoard.length) {
       for (let i = 0; i <= tempBoard.length - cleared.length; i++) {
         cleared.unshift([...emptyRow]);
+        setRowsClearedCount(rowsClearedCount + 1);
         console.log("line cleared");
       }
 
@@ -522,12 +526,19 @@ function App() {
           })}
         </div>
 
-        <SideBoard
-          board={swappedBoard}
-          columns={swappedBoard[0].length}
-          gameMode={gameMode}
-          title="Swap"
-        />
+        <div className="text-green-400">
+          <SideBoard
+            board={swappedBoard}
+            width="w-20"
+            columns={swappedBoard[0].length}
+            gameMode={gameMode}
+            title="Swap"
+          />
+          <div className="flex mt-4">
+            <h3 className="">Rows Cleared:</h3>
+            <p>{`\u00a0 ${rowsClearedCount}`}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
