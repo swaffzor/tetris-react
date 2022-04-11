@@ -118,7 +118,7 @@ function App() {
 
   const [velocity, setVelocity] = useState(velocityStart);
   const [levelVelocity, setLevelVelocity] = useState(velocityStart);
-  const [time, setTime] = useState(0);
+  const [tick, setTick] = useState(0);
 
   const [gameMode, setGameMode] = useState<Game>(Game.Play);
   const [dropPiece, setDropPiece] = useState(false);
@@ -171,7 +171,7 @@ function App() {
   const resetGame = () => {
     setStageBoard(emptyBoard);
     setSwappedBoard(emptysmallBoard);
-    setTime(0);
+    setTick(0);
     setVelocity(velocityStart);
     setLevelVelocity(velocityStart);
     setRowsClearedCount(0);
@@ -235,13 +235,16 @@ function App() {
         row.filter((spot) => spot.fixed).length === boardWidth ? false : true
       ) ?? [];
     if (cleared.length < tempBoard.length) {
-      for (let i = 0; i <= tempBoard.length - cleared.length; i++) {
+      const clearedLength = cleared.length;
+      let count = 0;
+      for (let i = 0; i <= tempBoard.length - 1 - clearedLength; i++) {
         cleared.unshift([...emptyRow]);
-        setRowsClearedCount(rowsClearedCount + 1);
+        count++;
         console.log("line cleared");
       }
 
-      setLevelVelocity(levelVelocity - 10);
+      setRowsClearedCount(rowsClearedCount + count);
+      setLevelVelocity(levelVelocity - 10 * count);
     }
     return cleared;
   };
@@ -269,18 +272,18 @@ function App() {
 
   useEffect(() => {
     gameMode === Game.Play &&
-      time > 0 &&
+      tick > 0 &&
       setVelocity(dropPiece ? velocity / 10000 : levelVelocity);
   }, [dropPiece]);
 
   useEffect(() => {
     gameMode === Game.Play &&
-      time > 0 &&
+      tick > 0 &&
       setVelocity(fastGravity ? velocity / 10 : levelVelocity);
   }, [fastGravity]);
 
   useEffect(() => {
-    if (time > 0) {
+    if (tick > 0) {
       setOverlayText("game over");
       setGameMode(Game.Over);
       console.log("GAME OVER");
@@ -406,11 +409,11 @@ function App() {
     }
 
     let timeout = setTimeout(() => {
-      gameMode === Game.Play && setTime(time + 1);
+      gameMode === Game.Play && setTick(tick + 1);
     }, velocity);
 
     return () => clearInterval(timeout);
-  }, [time, velocity, swappedPiece, gameMode]);
+  }, [tick, velocity, swappedPiece, gameMode]);
 
   // move left or right
   useEffect(() => {
@@ -537,6 +540,14 @@ function App() {
           <div className="flex mt-4">
             <h3 className="">Rows Cleared:</h3>
             <p>{`\u00a0 ${rowsClearedCount}`}</p>
+          </div>
+          <div className="flex mt-4">
+            <h3 className="">Ticks:</h3>
+            <p>{`\u00a0 ${tick}`}</p>
+          </div>
+          <div className="flex mt-4">
+            <h3 className="">Fall Delay:</h3>
+            <p>{`\u00a0 ${velocity} ms`}</p>
           </div>
         </div>
       </div>
