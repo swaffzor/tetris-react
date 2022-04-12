@@ -119,6 +119,7 @@ function App() {
   const [velocity, setVelocity] = useState(velocityStart);
   const [levelVelocity, setLevelVelocity] = useState(velocityStart);
   const [tick, setTick] = useState(0);
+  const [hTick, setHTick] = useState(0);
 
   const [gameMode, setGameMode] = useState<Game>(Game.Play);
   const [dropPiece, setDropPiece] = useState(false);
@@ -424,6 +425,7 @@ function App() {
         : rightPressed && magnitude < boardWidth
         ? 1
         : 0;
+
     let allowed = true;
     piece.sprite.forEach((spot) => {
       const isFixed = stageBoard[spot.row][spot.col + direction]?.fixed;
@@ -432,7 +434,7 @@ function App() {
       }
     });
 
-    allowed &&
+    if (allowed) {
       setPieceOnStage({
         ...piece,
         column: piece.column + direction,
@@ -443,7 +445,11 @@ function App() {
           };
         }),
       });
-  }, [leftPressed, rightPressed]);
+    }
+    setTimeout(() => {
+      setHTick(hTick + 1);
+    }, 125);
+  }, [leftPressed, rightPressed, hTick]);
 
   // rotation
   useEffect(() => {
