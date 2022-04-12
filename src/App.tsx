@@ -108,26 +108,31 @@ function App() {
     piecePosition++;
   });
 
+  // boards
   const [stageBoard, setStageBoard] = useState<Board>(emptyBoard);
   const [nextBoard, setNextBoard] = useState<Board>(nextQ);
   const [swappedBoard, setSwappedBoard] = useState<Board>(emptysmallBoard);
 
+  // pieces
   const [piece, setPiece] = useState<Piece>(pieceSprites.j);
   const [nextPiece, setNextPiece] = useState<Piece>(pieceSprites.t);
   const [swappedPiece, setSwappedPiece] = useState<Piece>();
 
+  // physics
   const [velocity, setVelocity] = useState(velocityStart);
   const [levelVelocity, setLevelVelocity] = useState(velocityStart);
   const [tick, setTick] = useState(0);
   const [hTick, setHTick] = useState(0);
-
-  const [gameMode, setGameMode] = useState<Game>(Game.Play);
   const [dropPiece, setDropPiece] = useState(false);
   const [fastGravity, setFastGravity] = useState(false);
 
+  // admin
+  const [gameMode, setGameMode] = useState<Game>(Game.Play);
   const [overlayText, setOverlayText] = useState("paused");
   const [rowsClearedCount, setRowsClearedCount] = useState(0);
+  const [highScore, setHighScore] = useState(0);
 
+  // keypresses
   const keyLeftPressed = useKeyPress("ArrowLeft");
   const keyRightPressed = useKeyPress("ArrowRight");
   const keyUpPressed = useKeyPress("ArrowUp");
@@ -140,6 +145,8 @@ function App() {
   const keyShiftPressed = useKeyPress("Shift");
   const keyEscapePressed = useKeyPress("Escape");
   const keySpacePressed = useKeyPress(" ");
+
+  // controls
   const controlsEnabled = gameMode === Game.Play;
   const rotateCW = controlsEnabled && keySpacePressed;
   const rotateCounterCW = controlsEnabled && rotateCW && keyShiftPressed;
@@ -241,7 +248,7 @@ function App() {
       for (let i = 0; i <= tempBoard.length - 1 - clearedLength; i++) {
         cleared.unshift([...emptyRow]);
         count++;
-        console.log("line cleared");
+        console.info("line cleared");
       }
 
       setRowsClearedCount(rowsClearedCount + count);
@@ -250,8 +257,11 @@ function App() {
     return cleared;
   };
 
+  // init
   useEffect(() => {
     resetGame();
+    const savedScore = localStorage.getItem("highScore");
+    savedScore && setHighScore(Number(savedScore));
   }, []);
 
   useEffect(() => {
@@ -287,7 +297,11 @@ function App() {
     if (tick > 0) {
       setOverlayText("game over");
       setGameMode(Game.Over);
-      console.log("GAME OVER");
+      if (rowsClearedCount > highScore) {
+        localStorage.setItem("highScore", rowsClearedCount.toString());
+        setHighScore(rowsClearedCount);
+      }
+      console.info("GAME OVER");
     }
   }, [stageBoard[0].some((spot) => spot.fixed)]); // when any spot in top row is fixed
 
@@ -295,7 +309,7 @@ function App() {
   useEffect(() => {
     if (swappPressed) {
       swappPressed = false;
-      console.log("SWAP");
+      console.info("SWAP");
       let newPiece = swappedPiece;
       if (!newPiece) {
         newPiece = nextPiece;
@@ -545,17 +559,23 @@ function App() {
               title="Swap"
             />
           </div>
+
+          <h3 className="mt-4 text-xl text-indigo-400">High Score</h3>
+          <p className="text-indigo-400">{highScore} rows</p>
+
           <div className="flex mt-4">
             <h3 className="">Rows Cleared:</h3>
             <p>{`\u00a0 ${rowsClearedCount}`}</p>
           </div>
-          <div className="flex mt-4">
-            <h3 className="">Ticks:</h3>
-            <p>{`\u00a0 ${tick}`}</p>
-          </div>
+
           <div className="flex mt-4">
             <h3 className="">Fall Delay:</h3>
             <p>{`\u00a0 ${velocity} ms`}</p>
+          </div>
+
+          <div className="flex mt-4">
+            <h3 className="">Ticks:</h3>
+            <p>{`\u00a0 ${tick}`}</p>
           </div>
         </div>
       </div>
