@@ -530,13 +530,15 @@ function App() {
         </div>
 
         <div className="text-green-400">
-          <SideBoard
-            board={swappedBoard}
-            width="w-20"
-            columns={swappedBoard[0].length}
-            gameMode={gameMode}
-            title="Swap"
-          />
+          <div className="w-16">
+            <SideBoard
+              board={swappedBoard}
+              width="w-20"
+              columns={swappedBoard[0].length}
+              gameMode={gameMode}
+              title="Swap"
+            />
+          </div>
           <div className="flex mt-4">
             <h3 className="">Rows Cleared:</h3>
             <p>{`\u00a0 ${rowsClearedCount}`}</p>

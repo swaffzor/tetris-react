@@ -15,7 +15,7 @@ const SideBoard = ({ gameMode, columns, board, title, width }: Props) => {
     <fieldset
       className={`${
         gameMode ? "opacity-100" : "opacity-25"
-      } p-4 mx-auto text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
+      } p-4 text-sm align-middle border-2 rounded-md h-fit border-slate-700 text-slate-500 dark:text-slate-400`}
     >
       <legend className="mx-auto text-base font-medium tracking-tight text-slate-900 dark:text-white">
         {title}
