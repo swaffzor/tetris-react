@@ -440,9 +440,9 @@ const TetrisGame = () => {
 
     let allowed = true;
     piece.sprite.forEach((spot) => {
-      const isFixed = stageBoard[spot.row][spot.col + direction]?.fixed;
-      if (isFixed) {
-        allowed = !isFixed;
+      const isSpotFixed = stageBoard[spot.row][spot.col + direction]?.fixed;
+      if (isSpotFixed) {
+        allowed = !isSpotFixed;
       }
     });
 
@@ -458,9 +458,6 @@ const TetrisGame = () => {
         }),
       });
     }
-    setTimeout(() => {
-      setHTick(hTick + 1);
-    }, 125);
   }, [leftPressed, rightPressed, hTick]);
 
   // rotation
