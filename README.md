@@ -14,4 +14,6 @@ yarn run deploy
 ## TODO
 
 - [ ] add control instructions to UI
+- [ ] separate webpack configs
+- [ ] keep track of scores (and graph normal distribution?)
 - [x] add deployment documentation (gh-pages?)
